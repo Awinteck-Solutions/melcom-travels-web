@@ -9,27 +9,27 @@ const ProgressStepper = ({ currentStep = 1 }) => {
     ];
 
     return (
-        <Stack gap="lg" className="w-full max-w-[875px]">
+        <Stack gap="lg" className="w-full max-w-[875px] m-auto">
             <Stepper 
                 active={currentStep - 1} 
-                color="green"
+                color="#05B491"
                 size="xs"
                 radius="xl"
             >
                 <Stepper.Step 
                     label="Choose flight" 
                     description="Select your preferred flight"
-                    color={currentStep >= 1 ? "green" : "gray"}
+                    color={currentStep >= 1 ? "#05B491" : "gray"}
                 />
                 <Stepper.Step 
                     label="Your Details" 
                     description="Enter passenger information"
-                    color={currentStep >= 2 ? "green" : "gray"}
+                    color={currentStep >= 2 ? "#05B491" : "gray"}
                 />
                 <Stepper.Step 
                     label="Confirm Booking" 
                     description="Review and confirm your booking"
-                    color={currentStep >= 3 ? "green" : "gray"}
+                    color={currentStep >= 3 ? "#05B491" : "gray"}
                 />
             </Stepper>
         </Stack>

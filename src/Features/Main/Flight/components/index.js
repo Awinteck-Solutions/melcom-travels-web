@@ -5,7 +5,11 @@ export { default as FlightSearch } from './FlightSearch';
 export { default as FlightResults } from './FlightResults';
 export { default as FilterSidebar } from './FilterSidebar';
 export { default as ProgressStepper } from './ProgressStepper';
-export { default as FlightResultCard } from './FlightResultCard';
+export { 
+    OneWayFlightResultCard,
+    MultiCityFlightResultCard,
+    RoundTripFlightResultCard 
+} from './FlightResultCard';
 export { default as SearchResults } from './SearchResults';
 export { default as FlightDeals } from './FlightDeals';
 export { default as Blogs } from './Blogs';

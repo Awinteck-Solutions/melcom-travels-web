@@ -6,11 +6,8 @@ const FlightRoutes = () => {
 
   return (
       <Routes>
-          <Route path='flights'>
-              <Route path='' element={<FlightPage />} />
-              <Route path='search' element={<SearchPage />} />
-          </Route>
-         
+          <Route path='' element={<FlightPage />} />
+          <Route path='search' element={<SearchPage />} />
       </Routes>
   )
 }
