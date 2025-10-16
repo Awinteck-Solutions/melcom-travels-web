@@ -190,7 +190,7 @@ const FilterSidebar = () => {
                                         border: 'none'
                                     },
                                     track: {
-                                        '&[data-filled]': {
+                                        '&[dataFilled]': {
                                             background: 'linear-gradient(to right, #243167, #364A9C)'
                                         }
                                     }
@@ -228,7 +228,7 @@ const FilterSidebar = () => {
                                 color="#364A9C"
                                 styles={{
                                     control: {
-                                        '&[data-active]': {
+                                        '&[dataActive]': {
                                             background: 'linear-gradient(to right, #243167, #364A9C)',
                                             color: 'white'
                                         }
@@ -260,7 +260,7 @@ const FilterSidebar = () => {
                                                 border: 'none'
                                             },
                                             track: {
-                                                '&[data-filled]': {
+                                                '&[dataFilled]': {
                                                     background: 'linear-gradient(to right, #243167, #364A9C)'
                                                 }
                                             }
@@ -290,7 +290,7 @@ const FilterSidebar = () => {
                                                 border: 'none'
                                             },
                                             track: {
-                                                '&[data-filled]': {
+                                                '&[dataFilled]': {
                                                     background: 'linear-gradient(to right, #243167, #364A9C)'
                                                 }
                                             }
@@ -320,7 +320,7 @@ const FilterSidebar = () => {
                                                 border: 'none'
                                             },
                                             track: {
-                                                '&[data-filled]': {
+                                                '&[dataFilled]': {
                                                     background: 'linear-gradient(to right, #243167, #364A9C)'
                                                 }
                                             }
@@ -350,7 +350,7 @@ const FilterSidebar = () => {
                                                 border: 'none'
                                             },
                                             track: {
-                                                '&[data-filled]': {
+                                                '&[dataFilled]': {
                                                     background: 'linear-gradient(to right, #243167, #364A9C)'
                                                 }
                                             }

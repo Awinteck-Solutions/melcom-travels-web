@@ -29,7 +29,7 @@ const SearchPage = () => {
       <div className='md:mt-[170px] mt-[110px]'>
         {/* Flight Search Form */}
         <div className="mb-8 px-6">
-          <FlightSearch setResultLoading={setResultLoading} />
+          <FlightSearch setResultLoading={setResultLoading} isResultLoading={resultLoading} />
         </div>
 
         {/* Search Results with Filter Sidebar */}

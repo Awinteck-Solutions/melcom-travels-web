@@ -93,7 +93,6 @@ const SearchSelect = ({ label, value, onChange, apiAirports, isLoading, onSearch
             renderOption={renderOption}
             filter={optionsFilter}
             disabled={isLoading}
-            duplicateValues={false}
             styles={{
               input: {
                 width: '100%',

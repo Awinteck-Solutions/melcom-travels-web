@@ -11,7 +11,7 @@ import { updateDaysCount } from '../../../../utils/page.helper';
 import { searchAirports, searchFlights } from '../services/Flight.services';
 import { notifications } from '@mantine/notifications';
 
-const FlightSearch = ({ setResultLoading }) => {
+const FlightSearch = ({ setResultLoading, isResultLoading }) => {
     const [dateValue, setDateValue] = useState(null);
     const [passengers, setPassengers] = useState({ adult: 1, children: 0, infant: 0 });
     const [toleranceDays, setToleranceDays] = useState(1);
@@ -34,7 +34,7 @@ const FlightSearch = ({ setResultLoading }) => {
     // PERSONAL CODE
     const [OneWayFlightSearchData, setOneWayFlightSearchData] = useState({})
 
-    const { setSearchData, setLoading,setResults, formData, setFormData } = useSearchContext();
+    const { setSearchData, setLoading, setResults, formData, setFormData } = useSearchContext();
     const navigate = useNavigate();
     const isLoadingFromContext = useRef(false);
     const previousFormData = useRef(null);
@@ -122,7 +122,7 @@ const FlightSearch = ({ setResultLoading }) => {
             toleranceDays: searchData.toleranceDays,
         };
 
-        console.log('Flight Search Payload:', payload); 
+        console.log('Flight Search Payload:', payload);
 
         // Set loading state
         setLoading(true);
@@ -133,7 +133,7 @@ const FlightSearch = ({ setResultLoading }) => {
             setResultLoading(true);
             // Call the searchFlights API
             const response = await searchFlights(payload);
-            
+
             if (response.status) {
                 // Store flight results in context
                 setResults(response.data);
@@ -144,6 +144,13 @@ const FlightSearch = ({ setResultLoading }) => {
                     color: 'green',
                     position: 'top-right',
                 });
+                // Navigate to search results page
+                if (window.location.pathname !== '/flights/search') {
+                    setTimeout(() => {
+                        navigate('/flights/search');
+                        // window.location.href = '/flights/search';
+                    }, 100);
+                }
             } else {
                 notifications.show({
                     title: 'Flight search error',
@@ -165,12 +172,7 @@ const FlightSearch = ({ setResultLoading }) => {
             setResultLoading(false);
         }
 
-        // Navigate to search results page
-        if (window.location.pathname !== '/flights/search') {
-            setTimeout(() => {
-                navigate('/flights/search');
-            }, 100);
-        }
+
     }
 
 
@@ -233,8 +235,9 @@ const FlightSearch = ({ setResultLoading }) => {
                 </div>
 
                 <Tabs.Panel value="oneway" className="md:pt-1">
-                    <OneWayFlightSearch 
+                    <OneWayFlightSearch
                         handleSearch={handleSearch}
+                        isResultLoading={isResultLoading}
                     />
                 </Tabs.Panel>
 
@@ -282,9 +285,9 @@ const FlightSearch = ({ setResultLoading }) => {
 export default FlightSearch;
 
 
-const OneWayFlightSearch = ({ handleSearch }) => {
+const OneWayFlightSearch = ({handleSearch, isResultLoading=false}) => {
 
-    const {searchData} = useSearchContext();
+    const { searchData } = useSearchContext();
     // console.log('searchData', searchData)
     // get todays date
     const today = new Date();
@@ -304,37 +307,37 @@ const OneWayFlightSearch = ({ handleSearch }) => {
     const [apiAirportsto, setApiAirportsto] = useState([]);
     const [isLoading, setIsLoading] = useState({ from: false, to: false });
     const searchTimeoutRef = useRef(null);
-  const hasInitializedRef = useRef(false);
-     // Search airports from API
-  const searchAirportsFromAPI = async (query = 'acc', type = 'from') => {
-    console.log('🔍 ======= SearchAirportsFromAPI:', query, 'type:', type);
-    
-    setIsLoading(prev => ({ ...prev, [type]: true }));
-    try {
-      const response = await searchAirports(query);
-      console.log('searchAirports', response.data.airports)
-        if (response.status) {
-          if (type === 'from') {
-            setApiAirportsfrom(response.data.airports || []);
-            console.log('✅ Set apiAirportsfrom:', response.data.airports);
-            // If this is the initial load and we have a default value, ensure it's set
-            if (query === 'acc' && fromLocation === 'ACC') {
-              console.log('🎯 Initial load with acc - fromLocation:', fromLocation);
+    const hasInitializedRef = useRef(false);
+    // Search airports from API
+    const searchAirportsFromAPI = async (query = 'acc', type = 'from') => {
+        console.log('🔍 ======= SearchAirportsFromAPI:', query, 'type:', type);
+
+        setIsLoading(prev => ({ ...prev, [type]: true }));
+        try {
+            const response = await searchAirports(query);
+            console.log('searchAirports', response.data.airports)
+            if (response.status) {
+                if (type === 'from') {
+                    setApiAirportsfrom(response.data.airports || []);
+                    console.log('✅ Set apiAirportsfrom:', response.data.airports);
+                    // If this is the initial load and we have a default value, ensure it's set
+                    if (query === 'acc' && fromLocation === 'ACC') {
+                        console.log('🎯 Initial load with acc - fromLocation:', fromLocation);
+                    }
+                } else if (type === 'to') {
+                    setApiAirportsto(response.data.airports || []);
+                    console.log('✅ Set apiAirportsto:', response.data.airports);
+                }
+            } else {
+                console.error('Failed to search airports:', response.message);
             }
-          } else if (type === 'to') {
-            setApiAirportsto(response.data.airports || []);
-            console.log('✅ Set apiAirportsto:', response.data.airports);
-          }
-      } else {
-        console.error('Failed to search airports:', response.message);
-      }
-    } catch (error) {
-      console.error('Error searching airports:', error);
-    } finally {
-      setIsLoading(prev => ({ ...prev, [type]: false }));
-    }
-  };
-    
+        } catch (error) {
+            console.error('Error searching airports:', error);
+        } finally {
+            setIsLoading(prev => ({ ...prev, [type]: false }));
+        }
+    };
+
     const handleFromSearchChange = (searchValue) => {
         console.log('🔍 ======= handleFromSearchChange:', searchValue);
         // Clear existing timeout
@@ -370,8 +373,9 @@ const OneWayFlightSearch = ({ handleSearch }) => {
     };
 
     useEffect(() => {
+        console.log('CONTEXT SEARCH DATA - USE EFFECT', searchData)
         if (searchData?.origin) {
-            console.log('searchData', searchData)
+            console.log('CONTEXT SEARCH DATA - GET', searchData)
             setFromLocation(searchData.origin);
         }
         if (searchData?.destination) {
@@ -382,7 +386,7 @@ const OneWayFlightSearch = ({ handleSearch }) => {
             setDateValue(searchData.departureDate);
         }
         if (searchData?.adults || searchData?.children || searchData?.infants) {
-            let passengers = { adult: searchData.adults || 1, children: searchData.children || 0, infant: searchData.infants || 0 };   
+            let passengers = { adult: searchData.adults || 1, children: searchData.children || 0, infant: searchData.infants || 0 };
             setPassengers(passengers);
         }
         if (searchData?.toleranceDays) {
@@ -395,7 +399,7 @@ const OneWayFlightSearch = ({ handleSearch }) => {
             setSelectedAirline(searchData.selectedAirline || '');
         }
         searchAirportsFromAPI('acc', 'from');
-        
+
     }, []);
 
     return (
@@ -412,16 +416,16 @@ const OneWayFlightSearch = ({ handleSearch }) => {
                             onChange={setFromLocation}
                             onSearchChange={handleFromSearchChange} />
                         <div className='rounded-full h-fit p-2 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
                         </div>
                     </div>
 
                     <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
-                        <SearchSelect 
+                        <SearchSelect
                             apiAirports={apiAirportsto}
                             isLoading={isLoading.to}
-                            label="To" 
-                            value={toLocation} 
+                            label="To"
+                            value={toLocation}
                             onChange={setToLocation}
                             onSearchChange={handleToSearchChange} />
                     </div>
@@ -516,9 +520,11 @@ const OneWayFlightSearch = ({ handleSearch }) => {
                         </label>
                     </div>
 
-                    <button className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8'
+                    <button
+                        disabled={isResultLoading}
+                        className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8'
                         onClick={() => handleOneWaySearch()}>
-                        Search
+                        {isResultLoading ? 'Searching...' : 'Search'}
                     </button>
                 </div>
             </div>
@@ -545,7 +551,7 @@ const RoundTripFlightSearch = ({ fromLocation, setFromLocation, toLocation, setT
                     <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
                         <SearchSelect label="From" value={fromLocation} onChange={setFromLocation} />
                         <div className='rounded-full h-fit p-2 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
                         </div>
                     </div>
 
@@ -732,7 +738,7 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                                         onChange={(value) => updateMultiCityItem(item.id, { fromLocation: value })}
                                     />
                                     <div className='rounded-full h-fit p-2 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
                                     </div>
                                 </div>
 

@@ -105,6 +105,7 @@ export const SearchProvider = ({ children }) => {
     };
 
     const setResults = (results) => {
+        console.log('CONTEXT SET RESULTS', results);
         dispatch({ type: SEARCH_ACTIONS.SET_RESULTS, payload: results });
     };
 

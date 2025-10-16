@@ -66,7 +66,7 @@ const FlightPage = () => {
       <div className='md:mt-[170px] mt-[110px] '>
 
         <div className='px-6'>
-        <FlightSearch setResultLoading={setResultLoading} />
+        <FlightSearch setResultLoading={setResultLoading} isResultLoading={resultLoading}   />
         </div>
 
 

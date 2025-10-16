@@ -154,7 +154,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                         <Stack gap="xs" className='md:m-auto md:m-0'>
                             <p className='text-sm  text-gray-600'>Transfer</p>
                             <Badge variant="light" color="gray" size="lg">
-                                <p className='text-sm font-semibold capitalize text-gray-800'>{1}</p>
+                                <p className='text-sm font-semibold capitalize text-gray-800'>{flight?.segments.length - 1}</p>
                             </Badge>
                         </Stack>
                         {
@@ -226,7 +226,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                             </Timeline.Item>
                             <Timeline.Item ml={2} >
                                 <div className="md:grid grid-cols-6">
-                                    <p className='col-span-2 text-gray-500 text-sm'>22:06 <span className=''>20.08 Wednesday</span></p>
+                                    <p className='col-span-2 text-gray-500 text-sm'>{formatTime(segment?.arrival?.time)} <span className=''>{formatDate(segment?.arrival?.time)}</span></p>
                                     <p className='col-span-3 text-sm font-semibold'>{segment?.arrival?.airport}</p>
                                 </div>
                             </Timeline.Item>

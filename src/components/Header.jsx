@@ -11,27 +11,29 @@ const Header = ({ currentPage }) => {
       <div className="max-w-7xll mx-auto flex items-start justify-between">
         {/* Logo Section */}
         <div className="flex items-center space-x-1">
+          <Link to="/">
           <img className='h-20 w-20 md:h-36 md:w-36' src='/logo.svg' alt="MELCOM" />
+          </Link>
         </div>
 
         {/* Navigation */}
         <nav className="md:flex hidden items-center overflow-x-auto scrollbar-thin font-semiboldl lg:space-x-8 duration-300 transition-all">
-          {currentPage === 'flights' ? <a href="/flights" className="flex items-center space-x-2 text-[#364A9C]  border border-[#364A9C] bg-blue-50/50 lg:px-4 md:px-2 py-2 rounded-xl">
+          {currentPage === 'flights' ? <Link to="/flights" className="flex items-center space-x-2 text-[#364A9C]  border border-[#364A9C] bg-blue-50/50 lg:px-4 md:px-2 py-2 rounded-xl">
             <span>Flights</span>
             <svg className='hidden lg:block' xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M3 21v-2h18v2zm1.75-5L1 9.75l2.4-.65l2.8 2.35l3.5-.925l-5.175-6.9l2.9-.775L14.9 9.125l4.25-1.15q.8-.225 1.513.187t.937 1.213t-.187 1.513t-1.213.937z" /></svg>
-          </a>
-            : <a href="/flights" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
+          </Link>
+            : <Link to="/flights" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
               <span className='px-3'>Flights</span>
-            </a>
+            </Link>
           }
           {/* blogs */}
-          {currentPage === 'blogs' ? <a href="/blogs" className="flex items-center space-x-2 text-[#364A9C]  border border-[#364A9C] bg-blue-50/50 lg:px-4 md:px-2 py-2 rounded-xl">
+          {currentPage === 'blogs' ? <Link to="/blogs" className="flex items-center space-x-2 text-[#364A9C]  border border-[#364A9C] bg-blue-50/50 lg:px-4 md:px-2 py-2 rounded-xl">
             <span>Blogs</span>
             <svg className='hidden lg:block' xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path d="M3 4v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8h-4" /><path d="M3 4h14v14a2 2 0 0 0 2 2v0M13 8H7m6 4H9" /></g></svg>
-          </a>
-            : <a href="/blogs" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
+          </Link>
+            : <Link to="/blogs" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
               <span className='px-3'>Blogs</span>
-            </a>
+            </Link>
           }
           {/* {currentPage === 'hotels' ? <a href="/hotels" className="flex items-center space-x-2 text-[#364A9C]  border-2 border-[#364A9C] bg-blue-50/50 px-4 py-2 rounded-xl">
             <span>Hotels</span>
@@ -45,13 +47,13 @@ const Header = ({ currentPage }) => {
           </a>
             : <a href="/" className="text-gray-700 hover:text-[#364A9C] transition-colors">Rides</a>
           } */}
-          {currentPage === 'contact' ? <a href="/" className="flex items-center space-x-2 text-[#364A9C]  border border-[#364A9C] bg-blue-50/50 lg:px-4 md:px-2 py-2 rounded-xl">
+          {currentPage === 'contact' ? <Link to="/contact" className="flex items-center space-x-2 text-[#364A9C]  border border-[#364A9C] bg-blue-50/50 lg:px-4 md:px-2 py-2 rounded-xl">
             <span>Contact us</span>
             <svg className='hidden lg:block' xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 100 100"><path fill="currentColor" d="M84.96 70.237c-.167-1.032-.814-1.914-1.783-2.438l-14.335-8.446l-.118-.066a4.26 4.26 0 0 0-1.937-.45c-1.201 0-2.348.455-3.144 1.253l-4.231 4.233c-.181.172-.771.421-.95.43c-.049-.004-4.923-.355-13.896-9.329c-8.957-8.955-9.337-13.844-9.34-13.844c.005-.25.251-.838.426-1.02l3.608-3.607c1.271-1.274 1.652-3.386.898-5.022L32.19 16.938c-.579-1.192-1.704-1.928-2.952-1.928c-.883 0-1.735.366-2.401 1.031l-9.835 9.813c-.943.938-1.755 2.578-1.932 3.898c-.086.631-1.831 15.693 18.819 36.346C51.42 83.627 65.09 84.989 68.865 84.989a11 11 0 0 0 1.376-.071c1.316-.176 2.954-.986 3.891-1.925l9.827-9.826c.802-.806 1.168-1.871 1.001-2.93" /></svg>
-          </a>
-            : <a href="/contact" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
+          </Link>
+            : <Link to="/contact" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
               <span className='px-3'>Contact us</span>
-            </a>
+            </Link>
           }
         </nav>
 
