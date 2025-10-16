@@ -8,8 +8,7 @@ import ContactRoutes from './Features/Main/Contact/routes/Contact.routes'
 import BlogRoutes from './Features/Main/Blog/routes/Blog.routes'
 import FlightPage from './Features/Main/Flight/pages/Flight.pages'
 
-// Import Auth components directly
-import AdminLoginPage from './Features/Auth/pages/admin.login.pages'
+// Import Auth components directly 
 import LoginPage from './Features/Auth/pages/Login.pages'
 import SignupPage from './Features/Auth/pages/Signup.pages'
 import ProfilePage from './Features/Auth/pages/Profile.pages'
@@ -33,8 +32,7 @@ function App() {
         {/* <Route path='/hotels/*' element={<HotelRoutes />} />
         <Route path='/cars/*' element={<CarRoutes />} /> */}
         
-        {/* Auth Routes */}
-        <Route path='/admin/auth' element={<AdminLoginPage />} />
+        {/* Auth Routes */} 
         <Route path='/login' element={<LoginPage />} />
         <Route path='/signup' element={<SignupPage />} />
         <Route path='/profile' element={<ProfilePage />} />

@@ -1,5 +1,4 @@
 import { Route, Routes } from 'react-router-dom'
-import AdminLoginPage from '../pages/admin.login.pages'
 import LoginPage from '../pages/Login.pages'
 import SignupPage from '../pages/Signup.pages'
 import ProfilePage from '../pages/Profile.pages'
@@ -18,9 +17,6 @@ const AuthRoutes = () => {
 
   return (
       <Routes>
-          <Route path='admin/auth'>
-              <Route path='' element={<AdminLoginPage />} />
-          </Route>
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignupPage />} />
           <Route path='/profile' element={<ProfilePage />} />

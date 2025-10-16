@@ -1,33 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import Header from '../../../../components/Header';
 import Footer from '../../../../components/Footer';
 import Container from '../../../../components/Container';
 import { useGlobalContext } from '../../../../context';
+import { submitContactForm, getContactInfo } from '../services/Contact.services';
+import { notifications } from '@mantine/notifications';
 
 const ContactPage = () => {
   const { isAuthenticated, user } = useGlobalContext();
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    inquiryType: '',
-    message: ''
+  const [isLoading, setIsLoading] = useState(false);
+  const [contactInfo, setContactInfo] = useState(null);
+
+
+  // Get contact information
+  const fetchContactInfo = async () => {
+    const response = await getContactInfo();
+    console.log('first', response.data.data)
+    if (response.status) {
+      setContactInfo(response.data.data);
+      
+    }
+  };
+
+  useEffect(() => {
+    fetchContactInfo();
+  }, []);
+
+  // Validation schema
+  const validationSchema = Yup.object({
+    firstName: Yup.string()
+      .min(2, 'First name must be at least 2 characters')
+      .required('First name is required'),
+    lastName: Yup.string()
+      .min(2, 'Last name must be at least 2 characters')
+      .required('Last name is required'),
+    email: Yup.string()
+      .email('Invalid email address')
+      .required('Email is required'),
+    inquiryType: Yup.string()
+      .required('Please select an inquiry type'),
+    message: Yup.string()
+      .min(10, 'Message must be at least 10 characters')
+      .required('Message is required')
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  // Formik setup
+  const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      inquiryType: '',
+      message: ''
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      setIsLoading(true);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
-    // You can add API call here
-  };
+      try {
+        // Prepare data according to API structure
+        const contactData = {
+          name: `${values.firstName} ${values.lastName}`,
+          email: values.email,
+          phone: values.phone || '',
+          subject: `${values.inquiryType} Inquiry`,
+          message: values.message,
+          inquiryType: values.inquiryType
+        };
+
+        const response = await submitContactForm(contactData);
+
+        if (response.status) {
+          notifications.show({
+            title: 'Success',
+            message: 'Your message has been sent successfully. We will get back to you soon!',
+            color: 'green',
+            position: 'top-right',
+          });
+
+          // Reset form
+          formik.resetForm();
+        } else {
+          notifications.show({
+            title: 'Error',
+            message: response.message || 'Failed to send message. Please try again.',
+            color: 'red',
+            position: 'top-right',
+          });
+        }
+      } catch (error) {
+        console.error('Contact form error:', error);
+        notifications.show({
+          title: 'Error',
+          message: 'An unexpected error occurred. Please try again.',
+          color: 'red',
+          position: 'top-right',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  });
 
   return (
     <Container>
@@ -82,7 +158,7 @@ const ContactPage = () => {
                   <div>
                     <h4 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-[#364A9C] transition-colors">Email Support</h4>
                     <p className="text-gray-600">
-                      Email us at <span className="text-[#364A9C] font-bold">support@melcomtravelandtour.com</span>
+                      Email us at <span className="text-[#364A9C] font-bold">{contactInfo?.email}</span>
                     </p>
                   </div>
                 </div>
@@ -97,7 +173,7 @@ const ContactPage = () => {
                   <div>
                     <h4 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-[#364A9C] transition-colors">Call Us</h4>
                     <p className="text-gray-600">
-                      <span className="text-[#364A9C] font-bold">+233 123 456 789</span> (Available 8 AM - 10 PM GMT)
+                      <span className="text-[#364A9C] font-bold">{contactInfo?.phone}</span> ({contactInfo?.workingHours})
                     </p>
                   </div>
                 </div>
@@ -112,7 +188,7 @@ const ContactPage = () => {
                   <div>
                     <h4 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">Chat With Us on WhatsApp</h4>
                     <p className="text-gray-600">
-                      Need help? WhatsApp us at <span className="text-[#364A9C] font-bold">+233 123 456 789</span> quick replies!
+                      Need help? WhatsApp us at <span className="text-[#364A9C] font-bold">{contactInfo?.whatsapp}</span> quick replies!
                     </p>
                   </div>
                 </div>
@@ -122,7 +198,7 @@ const ContactPage = () => {
               <div>
                 <h3 className="text-3xl font-bold text-gray-800 mb-8">Support Form</h3>
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={formik.handleSubmit} className="space-y-6 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -132,12 +208,19 @@ const ContactPage = () => {
                         type="text"
                         id="firstName"
                         name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
+                        value={formik.values.firstName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                         placeholder="Enter first name"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                        required
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                          formik.touched.firstName && formik.errors.firstName
+                            ? 'border-red-500'
+                            : 'border-gray-300'
+                        }`}
                       />
+                      {formik.touched.firstName && formik.errors.firstName && (
+                        <p className="mt-1 text-sm text-red-600">{formik.errors.firstName}</p>
+                      )}
                     </div>
                     
                     <div>
@@ -148,12 +231,19 @@ const ContactPage = () => {
                         type="text"
                         id="lastName"
                         name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
+                        value={formik.values.lastName}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                         placeholder="Enter last name"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                        required
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                          formik.touched.lastName && formik.errors.lastName
+                            ? 'border-red-500'
+                            : 'border-gray-300'
+                        }`}
                       />
+                      {formik.touched.lastName && formik.errors.lastName && (
+                        <p className="mt-1 text-sm text-red-600">{formik.errors.lastName}</p>
+                      )}
                     </div>
                   </div>
 
@@ -165,12 +255,42 @@ const ContactPage = () => {
                       type="email"
                       id="email"
                       name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
+                      value={formik.values.email}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
                       placeholder="Enter email address"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                      required
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                        formik.touched.email && formik.errors.email
+                          ? 'border-red-500'
+                          : 'border-gray-300'
+                      }`}
                     />
+                    {formik.touched.email && formik.errors.email && (
+                      <p className="mt-1 text-sm text-red-600">{formik.errors.email}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number (Optional)
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formik.values.phone}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      placeholder="eg. +233 123 456 789"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                        formik.touched.phone && formik.errors.phone
+                          ? 'border-red-500'
+                          : 'border-gray-300'
+                      }`}
+                    />
+                    {formik.touched.phone && formik.errors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{formik.errors.phone}</p>
+                    )}
                   </div>
 
                   <div>
@@ -180,10 +300,14 @@ const ContactPage = () => {
                     <select
                       id="inquiryType"
                       name="inquiryType"
-                      value={formData.inquiryType}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all appearance-none bg-white"
-                      required
+                      value={formik.values.inquiryType}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all appearance-none bg-white ${
+                        formik.touched.inquiryType && formik.errors.inquiryType
+                          ? 'border-red-500'
+                          : 'border-gray-300'
+                      }`}
                     >
                       <option value="">Select inquiry type</option>
                       <option value="general">General Inquiry</option>
@@ -193,6 +317,9 @@ const ContactPage = () => {
                       <option value="technical">Technical Support</option>
                       <option value="feedback">Feedback</option>
                     </select>
+                    {formik.touched.inquiryType && formik.errors.inquiryType && (
+                      <p className="mt-1 text-sm text-red-600">{formik.errors.inquiryType}</p>
+                    )}
                   </div>
 
                   <div>
@@ -202,20 +329,28 @@ const ContactPage = () => {
                     <textarea
                       id="message"
                       name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
+                      value={formik.values.message}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
                       placeholder="Message"
                       rows={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
-                      required
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none ${
+                        formik.touched.message && formik.errors.message
+                          ? 'border-red-500'
+                          : 'border-gray-300'
+                      }`}
                     />
+                    {formik.touched.message && formik.errors.message && (
+                      <p className="mt-1 text-sm text-red-600">{formik.errors.message}</p>
+                    )}
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full bg-[#364A9C] text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 outline-none"
+                    disabled={isLoading}
+                    className="w-full bg-[#364A9C] text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Submit
+                    {isLoading ? 'Sending...' : 'Submit'}
                   </button>
                 </form>
               </div>

@@ -43,7 +43,7 @@ const BlogCard = ({ post, variant = 'default' }) => {
           />
           <div className="absolute top-4 left-4">
             <span className="px-3 py-1 bg-[#364A9C] text-white text-xs font-medium rounded-full shadow-lg">
-              {getCategoryLabel(post.category)}
+              {post.category}
             </span>
           </div>
           <div className="absolute bottom-4 right-4">
@@ -99,7 +99,7 @@ const BlogCard = ({ post, variant = 'default' }) => {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="py-2 px-2">
           <h3 className="font-bold text-gray-900 text-lg mb-3 line-clamp-2 leading-tight">
             {post.title}
           </h3>
@@ -130,7 +130,7 @@ const BlogCard = ({ post, variant = 'default' }) => {
           alt={post.title}
           className="w-full h-48 object-cover"
         />
-        <div className="p-6">
+        <div className="py-2 px-2">
           <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-2">
             {post.title}
           </h3>

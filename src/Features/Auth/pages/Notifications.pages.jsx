@@ -3,49 +3,51 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobalContext } from '../../../context';
 import Container from '../../../components/Container';
 import Header from '../../../components/Header';
+import { updateNotificationStatus } from '../services/auth.service';
+import { notifications } from '@mantine/notifications';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
-  const { user } = useGlobalContext();
+  const { user, token, updateUser } = useGlobalContext();
   
-  const [notifications, setNotifications] = useState({
-    flightStatus: true,
-    rideAlerts: true,
-    promotions: false,
-    accountSecurity: false,
-    emails: false
+  const [notify, setNotifications] = useState({
+    flightAlerts: user?.notifications?.flightAlerts,
+    rideAlerts: user?.notifications?.rideAlerts,
+    promotions: user?.notifications?.promotions,
+    accountSecurity: user?.notifications?.accountSecurity,
+    emails: user?.notifications?.emails
   });
 
   const notificationCategories = [
     {
-      id: 'flightStatus',
+      id: 'flightAlerts',
       title: 'Flight Status Updates',
       description: 'Stay informed on delays & gate changes',
-      enabled: notifications.flightStatus
+      enabled: notify.flightAlerts
     },
     {
       id: 'rideAlerts',
       title: 'Ride Alerts',
       description: 'Get notified when your driver arrives.',
-      enabled: notifications.rideAlerts
+      enabled: notify.rideAlerts
     },
     {
       id: 'promotions',
       title: 'Promotions & Deals',
       description: 'Exclusive offers on flights, rides & hotels.',
-      enabled: notifications.promotions
+      enabled: notify.promotions
     },
     {
       id: 'accountSecurity',
       title: 'Account & Security',
       description: 'Alerts for login & password changes.',
-      enabled: notifications.accountSecurity
+      enabled: notify.accountSecurity
     },
     {
       id: 'emails',
       title: 'Emails',
       description: 'Receive booking confirmations & offers.',
-      enabled: notifications.emails
+      enabled: notify.emails
     }
   ];
 
@@ -58,6 +60,25 @@ const NotificationsPage = () => {
 
   const handleBack = () => {
     navigate('/profile');
+  };
+
+  const handleSaveNotifications = async () => {
+    const response = await updateNotificationStatus(notify, token);
+    if (response.status) {
+      updateUser(response.data.user);
+      notifications.show({
+        title: 'Success',
+        message: response.message || 'Notifications have been updated successfully.',
+        color: 'green',
+        position: 'top-right',
+      });
+    } else {
+      notifications.show({
+        title: 'Error',
+        message: response.message || 'Failed to update notifications. Please try again.',
+        color: 'red',
+      });
+    }
   };
 
   return (
@@ -144,9 +165,8 @@ const NotificationsPage = () => {
               <div className="mt-8">
                 <button
                   onClick={() => {
-                    // Save notification preferences
-                    console.log('Saving notification preferences:', notifications);
                     // You can add API call here to save preferences
+                    handleSaveNotifications();
                   }}
                   className="w-full bg-[#364A9C] text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-[#364A9C] focus:ring-offset-2 outline-none"
                 >

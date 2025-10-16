@@ -7,6 +7,7 @@ import { Notifications } from '@mantine/notifications';
 import { GlobalProvider, SearchProvider } from './context';
 
 createRoot(document.getElementById('root')).render(
+  // remove strict mode
   <StrictMode>
     <GlobalProvider>
       <SearchProvider>

@@ -13,9 +13,15 @@ import {
     Timeline
 } from '@mantine/core';
 import { IconPlane, IconChevronDown, IconShare, IconLuggage } from '@tabler/icons-react';
+import LuggageInfoModal from './LuggageInfoModal';
+import TarifConditionModal from './TarifConditionModal';
 
 export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => {
     const [showDetails, setShowDetails] = useState(false);
+    const [luggageModalOpened, setLuggageModalOpened] = useState(false);
+    const [tarifModalOpened, setTarifModalOpened] = useState(false);
+
+    // console.log('OneWayFlightResultCard - flight:', flight);
 
     // Airline logo component (placeholder for now)
     const AirlineLogo = ({ airline, className = "" }) => {
@@ -166,14 +172,14 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                     {onBookNow &&
                         <div className='md:w-fit w-full'>
                             <Button
-                        color="#364A9C"
+                                color="#364A9C"
                                 size="md"
                                 w="100%"
-                        radius="xl"
-                        onClick={() => onBookNow && onBookNow(flight)}
-                    >
-                        Book Now
-                    </Button>
+                                radius="xl"
+                                onClick={() => onBookNow && onBookNow(flight)}
+                            >
+                                Book Now
+                            </Button>
                         </div>
                     }
                 </Group>
@@ -181,57 +187,61 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                 {/* View Details button */}
                 <div>
                     <div className='md:w-fit w-full'>
-                    <Button
-                        variant="outline"
-                        color="#364A9C"
-                        size="md"
-                        w="100%"
-                        radius="xl"
-                        rightSection={<IconChevronDown size={16} />}
-                        onClick={() => {
-                            setShowDetails(!showDetails);
-                            onViewDetails && onViewDetails(flight, !showDetails);
-                        }}
-                    >
-                        View Details
-                    </Button>
-                   </div>
+                        <Button
+                            variant="outline"
+                            color="#364A9C"
+                            size="md"
+                            w="100%"
+                            radius="xl"
+                            rightSection={<IconChevronDown size={16} />}
+                            onClick={() => {
+                                setShowDetails(!showDetails);
+                                onViewDetails && onViewDetails(flight, !showDetails);
+                            }}
+                        >
+                            View Details
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Expanded details (when showDetails is true) */}
                 <Collapse in={showDetails}>
 
-                    <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
-                        <div className='border-l-2 border-[#364A9C] h-20 m-0'>
-                            <div className='w-full p-3 bg-[#FEEDDB] flex gap-2 items-center'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
-                                <p>Journey time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
-                            </div>
-                        </div>
-                        <Timeline.Item m={0} ml={2} h={10}>
-                            <div className="md:grid grid-cols-6">
-                                <p className='col-span-2 text-gray-500 text-sm'>06:05 <span className=''>20.08 Wednesday</span></p>
-                                <p className='col-span-3 text-sm font-semibold'>{flight.from}</p>
-                            </div>
-                        </Timeline.Item>
-                        <Timeline.Item ml={2} >
-                            <div className="md:grid grid-cols-6">
-                                <p className='col-span-2 text-gray-500 text-sm'>22:06 <span className=''>20.08 Wednesday</span></p>
-                                <p className='col-span-3 text-sm font-semibold'>{flight.to}</p>
-                            </div>
-                        </Timeline.Item>
-                        <div className='border-l-2 border-[#364A9C] h-24 m-0 pl-5 text-sm mt-4 space-y-2'>
-                            <p className='text-gray-500'>Flight Number: <span className='font-bold text-gray-800'>{flight.flightNumber || ''}</span></p>
-                            <p className='text-gray-500'>Airline: <span className='font-bold text-gray-800'>{flight.airline || ''}</span> | <span className='font-bold text-gray-800'> Flight Number: {flight.flightNumber || ''}</span> | <span className='font-bold text-gray-800'> Class: {flight.class || ''}</span></p>
-                            <p className='text-gray-500'>Plane type: <span className='font-bold text-gray-800'>{flight.planeType || ''}</span></p>
-                        </div>
+                    {/* flight segments */}
 
-                    </Timeline>
+                    {flight?.segments?.map((segment, index) => (
+                         <Timeline key={index} active={4} lineWidth={2} bulletSize={20} color="#364A9C">
+                            <div className='border-l-2 border-[#364A9C] h-20 m-0'>
+                                {/* show bg-[#FEEDDB] if index is odd */}
+                                <div className={`w-full p-3 ${index % 2 === 0 ? 'bg-[#FEEDDB]' : 'bg-[#E5FBE8]'} flex gap-2 items-center`}> 
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                    <p>Journey time: <span className='font-bold'>{segment?.duration || calculateDuration(segment?.departure?.time, segment?.arrival?.time)}</span></p>
+                                </div>
+                            </div>
+                            <Timeline.Item m={0} ml={2} h={10}>
+                                <div className="md:grid grid-cols-6">
+                                    <p className='col-span-2 text-gray-500 text-sm'>{formatTime(segment?.departure?.time)} <span className=''>{formatDate(segment?.departure?.time)}</span></p>
+                                    <p className='col-span-3 text-sm font-semibold'>{segment?.departure?.airport}</p>
+                                </div>
+                            </Timeline.Item>
+                            <Timeline.Item ml={2} >
+                                <div className="md:grid grid-cols-6">
+                                    <p className='col-span-2 text-gray-500 text-sm'>22:06 <span className=''>20.08 Wednesday</span></p>
+                                    <p className='col-span-3 text-sm font-semibold'>{segment?.arrival?.airport}</p>
+                                </div>
+                            </Timeline.Item>
+                            <div className='border-l-2 border-[#364A9C] h-24 m-0 pl-5 text-sm mt-4 space-y-2'>
+                                <p className='text-gray-500'>Flight Number: <span className='font-bold text-gray-800'>{segment?.flightNumber || ''}</span></p>
+                                <p className='text-gray-500'>Airline: <span className='font-bold text-gray-800'>{segment?.airline || ''}</span> | <span className='font-bold text-gray-800'> Flight Number: {segment?.flightNumber || ''}</span> | <span className='font-bold text-gray-800'> Class: {segment?.cabinClass || ''}</span></p>
+                                <p className='text-gray-500'>Plane type: <span className='font-bold text-gray-800'>{segment?.aircraft || ''}</span></p>
+                            </div>
 
-                    <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
+                        </Timeline>
+                    ))}
+                    {/* <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
                         <div className='border-l-2 border-[#364A9C] h-20 m-0'>
                             <div className='w-full p-3 bg-[#E5FBE8] flex gap-2 items-center'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
                                 <p>Transfer time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
                             </div>
                         </div>
@@ -253,7 +263,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                             <p className='text-gray-500'>Plane type: <span className='font-bold text-gray-800'>{flight.planeType || ''}</span></p>
                         </div>
 
-                    </Timeline>
+                    </Timeline> */}
 
 
                     {/* <Card withBorder radius="md" bg="gray.0">
@@ -283,16 +293,33 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                 {/* Bottom action bar */}
                 <Group justify="space-between" align="center">
                     <Group gap="sm">
-                        <ActionIcon variant="subtle" color="#364A9C">
+                        <ActionIcon
+                            variant="subtle"
+                            color="#364A9C"
+                            onClick={() => setLuggageModalOpened(true)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <IconLuggage size={20} />
                         </ActionIcon>
-                        <Text size="sm" c="#364A9C" fw={500}>
+                        <Text
+                            size="sm"
+                            c="#364A9C"
+                            fw={500}
+                            onClick={() => setLuggageModalOpened(true)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             Luggage Info
                         </Text>
                     </Group>
 
                     <Group gap="lg">
-                        <Text size="sm" c="#364A9C" fw={500} style={{ textDecoration: 'underline' }}>
+                        <Text
+                            size="sm"
+                            c="#364A9C"
+                            fw={500}
+                            style={{ textDecoration: 'underline', cursor: 'pointer' }}
+                            onClick={() => setTarifModalOpened(true)}
+                        >
                             Tarif Condition
                         </Text>
                         <Group gap="xs">
@@ -306,6 +333,18 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                     </Group>
                 </Group>
             </Stack>
+
+            {/* Luggage Info Modal */}
+            <LuggageInfoModal
+                opened={luggageModalOpened}
+                onClose={() => setLuggageModalOpened(false)}
+            />
+
+            {/* Tarif Condition Modal */}
+            <TarifConditionModal
+                opened={tarifModalOpened}
+                onClose={() => setTarifModalOpened(false)}
+            />
         </Card>
     );
 };
@@ -313,6 +352,8 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [showDetails2, setShowDetails2] = useState(false);
+    const [luggageModalOpened, setLuggageModalOpened] = useState(false);
+    const [tarifModalOpened, setTarifModalOpened] = useState(false);
 
     // Airline logo component (placeholder for now)
     const AirlineLogo = ({ airline, className = "" }) => {
@@ -465,19 +506,19 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                 <div>
                     <div className='md:w-fit w-full'>
                         <Button
-                        variant="outline"
-                        color="#364A9C"
-                        size="md"
-                        w="100%"
-                        radius="xl"
-                        rightSection={<IconChevronDown size={16} />}
-                        onClick={() => {
-                            setShowDetails(!showDetails);
-                            onViewDetails && onViewDetails(flight, !showDetails);
-                        }}
-                    >
-                        View Details
-                    </Button>
+                            variant="outline"
+                            color="#364A9C"
+                            size="md"
+                            w="100%"
+                            radius="xl"
+                            rightSection={<IconChevronDown size={16} />}
+                            onClick={() => {
+                                setShowDetails(!showDetails);
+                                onViewDetails && onViewDetails(flight, !showDetails);
+                            }}
+                        >
+                            View Details
+                        </Button>
                     </div>
                 </div>
 
@@ -487,7 +528,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                     <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
                         <div className='border-l-2 border-[#364A9C] h-20 m-0'>
                             <div className='w-full p-3 bg-[#FEEDDB] flex gap-2 items-center'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
                                 <p>Journey time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
                             </div>
                         </div>
@@ -514,7 +555,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                     <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
                         <div className='border-l-2 border-[#364A9C] h-20 m-0'>
                             <div className='w-full p-3 bg-[#E5FBE8] flex gap-2 items-center'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
                                 <p>Transfer time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
                             </div>
                         </div>
@@ -617,19 +658,19 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                 <div>
                     <div className='md:w-fit w-full'>
                         <Button
-                        variant="outline"
-                        color="#364A9C"
-                        size="md"
-                        w="100%"
-                        radius="xl"
-                        rightSection={<IconChevronDown size={16} />}
-                        onClick={() => {
-                            setShowDetails2(!showDetails2);
-                            onViewDetails && onViewDetails(flight, !showDetails2);
-                        }}
-                    >
-                        View Details
-                    </Button>
+                            variant="outline"
+                            color="#364A9C"
+                            size="md"
+                            w="100%"
+                            radius="xl"
+                            rightSection={<IconChevronDown size={16} />}
+                            onClick={() => {
+                                setShowDetails2(!showDetails2);
+                                onViewDetails && onViewDetails(flight, !showDetails2);
+                            }}
+                        >
+                            View Details
+                        </Button>
                     </div>
                 </div>
 
@@ -639,7 +680,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                     <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
                         <div className='border-l-2 border-[#364A9C] h-20 m-0'>
                             <div className='w-full p-3 bg-[#FEEDDB] flex flex-wrap gap-2 items-center'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
                                 <p>Journey time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
                             </div>
                         </div>
@@ -666,7 +707,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                     <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
                         <div className='border-l-2 border-[#364A9C] h-20 m-0'>
                             <div className='w-full p-3 bg-[#E5FBE8] flex gap-2 items-center'>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
                                 <p>Transfer time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
                             </div>
                         </div>
@@ -696,16 +737,33 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                 {/* Bottom action bar */}
                 <Group justify="space-between" align="center">
                     <Group gap="sm">
-                        <ActionIcon variant="subtle" color="#364A9C">
+                        <ActionIcon
+                            variant="subtle"
+                            color="#364A9C"
+                            onClick={() => setLuggageModalOpened(true)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             <IconLuggage size={20} />
                         </ActionIcon>
-                        <Text size="sm" c="#364A9C" fw={500}>
+                        <Text
+                            size="sm"
+                            c="#364A9C"
+                            fw={500}
+                            onClick={() => setLuggageModalOpened(true)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             Luggage Info
                         </Text>
                     </Group>
 
                     <Group gap="lg">
-                        <Text size="sm" c="#364A9C" fw={500} style={{ textDecoration: 'underline' }}>
+                        <Text
+                            size="sm"
+                            c="#364A9C"
+                            fw={500}
+                            style={{ textDecoration: 'underline', cursor: 'pointer' }}
+                            onClick={() => setTarifModalOpened(true)}
+                        >
                             Tarif Condition
                         </Text>
                         <Group gap="xs">
@@ -721,8 +779,8 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
 
 
                 {/* <div className='text-center'> */}
-                    {onBookNow && <div className='md:w-fit w-full'>
-                        <Button
+                {onBookNow && <div className='md:w-fit w-full'>
+                    <Button
                         color="#364A9C"
                         size="md"
                         radius="xl"
@@ -731,10 +789,22 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                     >
                         Book Now
                     </Button>
-                    </div>}
+                </div>}
                 {/* </div> */}
 
             </Stack>
+
+            {/* Luggage Info Modal */}
+            <LuggageInfoModal
+                opened={luggageModalOpened}
+                onClose={() => setLuggageModalOpened(false)}
+            />
+
+            {/* Tarif Condition Modal */}
+            <TarifConditionModal
+                opened={tarifModalOpened}
+                onClose={() => setTarifModalOpened(false)}
+            />
         </Card>
     );
 };
@@ -742,6 +812,8 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
 
 export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails }) => {
     const [showDetails, setShowDetails] = useState({});
+    const [luggageModalOpened, setLuggageModalOpened] = useState(false);
+    const [tarifModalOpened, setTarifModalOpened] = useState(false);
     // Flight route visualization
     const FlightRoute = () => (
         <div className="flex justify-start items-center m-auto md:m-0">
@@ -795,7 +867,7 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
             {flights.map((flight, index) => (
                 <div key={index}>
                     <Stack gap="lg" className='mb-6'>
-                      
+
                         {/* Header with airline, class, and price */}
                         <Group justify="space-between" align="center">
                             <Group gap="sm">
@@ -884,19 +956,19 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                         <div>
                             <div className='md:w-fit w-full'>
                                 <Button
-                                variant="outline"
-                                color="#364A9C"
-                                size="md"
-                                w="100%"
-                                radius="xl"
-                                rightSection={<IconChevronDown size={16} />}
-                                onClick={() => {
-                                    setShowDetails({ ...showDetails, [index]: !showDetails[index] });
-                                    onViewDetails && onViewDetails(flight, !showDetails[index]);
-                                }}
-                            >
-                                View Details
-                            </Button>
+                                    variant="outline"
+                                    color="#364A9C"
+                                    size="md"
+                                    w="100%"
+                                    radius="xl"
+                                    rightSection={<IconChevronDown size={16} />}
+                                    onClick={() => {
+                                        setShowDetails({ ...showDetails, [index]: !showDetails[index] });
+                                        onViewDetails && onViewDetails(flight, !showDetails[index]);
+                                    }}
+                                >
+                                    View Details
+                                </Button>
                             </div>
                         </div>
 
@@ -906,7 +978,7 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                             <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
                                 <div className='border-l-2 border-[#364A9C] h-20 m-0'>
                                     <div className='w-full p-3 bg-[#FEEDDB] flex gap-2 items-center'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
                                         <p>Journey time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
                                     </div>
                                 </div>
@@ -933,7 +1005,7 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                             <Timeline active={4} lineWidth={2} bulletSize={20} color="#364A9C">
                                 <div className='border-l-2 border-[#364A9C] h-20 m-0'>
                                     <div className='w-full p-3 bg-[#E5FBE8] flex gap-2 items-center'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" stroke-linecap="round" stroke-width="1.5"><path stroke-linejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
                                         <p>Transfer time: <span className='font-bold'>{flight.duration || calculateDuration(flight.departure, flight.arrival)}</span></p>
                                     </div>
                                 </div>
@@ -988,26 +1060,38 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                                     </Group>
                                 </>
                             )}
-                        
+
                         {index == flights.length - 1 && (
 
                             onBookNow && <div className='md:w-fit w-full'>
                                 <Button
-                                color="#364A9C"
+                                    color="#364A9C"
                                     size="md"
                                     w="100%"
-                                radius="xl"
-                                onClick={() => onBookNow && onBookNow(flight)}
-                            >
-                                Book Now
-                            </Button>
+                                    radius="xl"
+                                    onClick={() => onBookNow && onBookNow(flight)}
+                                >
+                                    Book Now
+                                </Button>
                             </div>
                         )}
 
                     </Stack>
                 </div>
-                
+
             ))}
+
+            {/* Luggage Info Modal */}
+            <LuggageInfoModal
+                opened={luggageModalOpened}
+                onClose={() => setLuggageModalOpened(false)}
+            />
+
+            {/* Tarif Condition Modal */}
+            <TarifConditionModal
+                opened={tarifModalOpened}
+                onClose={() => setTarifModalOpened(false)}
+            />
         </Card>
     );
 };

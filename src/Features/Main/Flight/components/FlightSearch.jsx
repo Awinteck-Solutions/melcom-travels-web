@@ -7,28 +7,34 @@ import DatePicker from '../../../../components/DatePicker';
 import Passengers from '../../../../components/Passengers';
 import { useSearchContext } from '../../../../context';
 import { useNavigate } from 'react-router-dom';
+import { updateDaysCount } from '../../../../utils/page.helper';
+import { searchAirports, searchFlights } from '../services/Flight.services';
+import { notifications } from '@mantine/notifications';
 
-const FlightSearch = () => {
+const FlightSearch = ({ setResultLoading }) => {
     const [dateValue, setDateValue] = useState(null);
     const [passengers, setPassengers] = useState({ adult: 1, children: 0, infant: 0 });
     const [toleranceDays, setToleranceDays] = useState(1);
     const [onlyDirectFlight, setOnlyDirectFlight] = useState(false);
-    const [fromLocation, setFromLocation] = useState('Accra');
-    const [toLocation, setToLocation] = useState('Paris');
+    const [fromLocation, setFromLocation] = useState('');
+    const [toLocation, setToLocation] = useState('');
     const [returnDateValue, setReturnDateValue] = useState(null);
     const [selectedAirline, setSelectedAirline] = useState('Emirates');
     const [flightClass, setFlightClass] = useState('economy');
     const [multiCityItems, setMultiCityItems] = useState([
         {
             id: 1,
-            fromLocation: 'Accra',
-            toLocation: 'Paris',
+            fromLocation: '',
+            toLocation: '',
             dateValue: null,
             passengers: { adult: 1, children: 0, infant: 0 }
         }
     ]);
 
-    const { setSearchData, setLoading, formData, setFormData } = useSearchContext();
+    // PERSONAL CODE
+    const [OneWayFlightSearchData, setOneWayFlightSearchData] = useState({})
+
+    const { setSearchData, setLoading,setResults, formData, setFormData } = useSearchContext();
     const navigate = useNavigate();
     const isLoadingFromContext = useRef(false);
     const previousFormData = useRef(null);
@@ -37,13 +43,13 @@ const FlightSearch = () => {
     // Initialize form state from persisted data or defaults
     useEffect(() => {
         if (formData && JSON.stringify(formData) !== JSON.stringify(loadedFormDataRef.current)) {
-            
+
             // Mark this form data as loaded to prevent re-loading
             loadedFormDataRef.current = formData;
             isLoadingFromContext.current = true;
-            
-            setFromLocation(formData.fromLocation || 'Accra');
-            setToLocation(formData.toLocation || 'Paris');
+
+            setFromLocation(formData.fromLocation || '');
+            setToLocation(formData.toLocation || '');
             setDateValue(formData.dateValue || null);
             setReturnDateValue(formData.returnDateValue || null);
             setPassengers(formData.passengers || { adult: 1, children: 0, infant: 0 });
@@ -54,10 +60,10 @@ const FlightSearch = () => {
             if (formData.multiCityItems) {
                 setMultiCityItems(formData.multiCityItems);
             }
-            
+
             // Set the previous form data to prevent unnecessary saves
             previousFormData.current = formData;
-            
+
             // Reset the flag after a short delay to allow state updates to complete
             setTimeout(() => {
                 isLoadingFromContext.current = false;
@@ -81,7 +87,7 @@ const FlightSearch = () => {
                 flightClass,
                 multiCityItems
             };
-            
+
             // Only save if the form data has actually changed
             const hasChanged = JSON.stringify(currentFormData) !== JSON.stringify(previousFormData.current);
             if (hasChanged) {
@@ -100,32 +106,73 @@ const FlightSearch = () => {
         };
     }, []);
 
-    const handleSearch = (searchType, searchData) => {
+    const handleSearch = async (searchType, searchData) => {
         const payload = {
-            searchType,
-            flightClass,
+            "origin": searchData.fromLocation,
+            "destination": searchData.toLocation,
+            "departureDate": searchData.dateValue,
+            "adults": searchData.passengers.adult,
+            "children": searchData.passengers.children,
+            "infants": searchData.passengers.infant,
+            "cabin": "ECO",
+            "tripType": searchType,
+            "directFlightsOnly": searchData.onlyDirectFlight,
+            "currency": "GHS",
             airline: selectedAirline,
-            onlyDirectFlight,
-            toleranceDays,
-            timestamp: new Date().toISOString(),
-            ...searchData
+            toleranceDays: searchData.toleranceDays,
         };
-        
-        console.log('Flight Search Payload:', payload);
-        
+
+        console.log('Flight Search Payload:', payload); 
+
         // Set loading state
         setLoading(true);
-        
-        // Store search data in context
         setSearchData(payload);
-        
-        // Small delay to ensure data is set before navigation
-        setTimeout(() => {
-            navigate('/flights/search');
-        }, 100);
-        
-        return payload;
+
+        try {
+            console.log('Search Flights API Payload:', payload);
+            setResultLoading(true);
+            // Call the searchFlights API
+            const response = await searchFlights(payload);
+            
+            if (response.status) {
+                // Store flight results in context
+                setResults(response.data);
+                console.log('Flight search results:', response.data);
+                notifications.show({
+                    title: 'Flight search results',
+                    message: 'Flight search results',
+                    color: 'green',
+                    position: 'top-right',
+                });
+            } else {
+                notifications.show({
+                    title: 'Flight search error',
+                    message: response.message || 'Failed to search flights',
+                    color: 'red',
+                    position: 'top-right',
+                });
+            }
+        } catch (error) {
+            notifications.show({
+                title: 'Flight search error',
+                message: error.message || 'Failed to search flights',
+                color: 'red',
+                position: 'top-right',
+            });
+        }
+        finally {
+            setLoading(false);
+            setResultLoading(false);
+        }
+
+        // Navigate to search results page
+        if (window.location.pathname !== '/flights/search') {
+            setTimeout(() => {
+                navigate('/flights/search');
+            }, 100);
+        }
     }
+
 
     return (
         <div className="relative bg-white border-2 border-[#364A9C] rounded-2xl p-3 md:p-5 max-w-7xl mx-auto px-3 md:px-6">
@@ -186,21 +233,7 @@ const FlightSearch = () => {
                 </div>
 
                 <Tabs.Panel value="oneway" className="md:pt-1">
-                    <OneWayFlightSearch
-                        fromLocation={fromLocation}
-                        setFromLocation={setFromLocation}
-                        toLocation={toLocation}
-                        setToLocation={setToLocation}
-                        dateValue={dateValue}
-                        setDateValue={setDateValue}
-                        passengers={passengers}
-                        setPassengers={setPassengers}
-                        toleranceDays={toleranceDays}
-                        setToleranceDays={setToleranceDays}
-                        onlyDirectFlight={onlyDirectFlight}
-                        setOnlyDirectFlight={setOnlyDirectFlight}
-                        selectedAirline={selectedAirline}
-                        setSelectedAirline={setSelectedAirline}
+                    <OneWayFlightSearch 
                         handleSearch={handleSearch}
                     />
                 </Tabs.Panel>
@@ -228,17 +261,17 @@ const FlightSearch = () => {
                 </Tabs.Panel>
 
                 <Tabs.Panel value="multicity" className="pt-1">
-                <MultiCityFlightSearch
-                    selectedAirline={selectedAirline}
-                    setSelectedAirline={setSelectedAirline}
-                    toleranceDays={toleranceDays}
-                    setToleranceDays={setToleranceDays}
-                    onlyDirectFlight={onlyDirectFlight}
-                    setOnlyDirectFlight={setOnlyDirectFlight}
-                    handleSearch={handleSearch}
-                    multiCityItems={multiCityItems}
-                    setMultiCityItems={setMultiCityItems}
-                />
+                    <MultiCityFlightSearch
+                        selectedAirline={selectedAirline}
+                        setSelectedAirline={setSelectedAirline}
+                        toleranceDays={toleranceDays}
+                        setToleranceDays={setToleranceDays}
+                        onlyDirectFlight={onlyDirectFlight}
+                        setOnlyDirectFlight={setOnlyDirectFlight}
+                        handleSearch={handleSearch}
+                        multiCityItems={multiCityItems}
+                        setMultiCityItems={setMultiCityItems}
+                    />
                 </Tabs.Panel>
             </Tabs>
 
@@ -249,15 +282,121 @@ const FlightSearch = () => {
 export default FlightSearch;
 
 
-const OneWayFlightSearch = ({ fromLocation, setFromLocation, toLocation, setToLocation, dateValue, setDateValue, passengers, setPassengers, toleranceDays, setToleranceDays, onlyDirectFlight, setOnlyDirectFlight, selectedAirline, setSelectedAirline, handleSearch }) => {
-    // Function to update tolerance days count
-    const updateDaysCount = (action) => {
-        if (action === 'increase') {
-            setToleranceDays(prev => Math.min(prev + 1, 7)); // Max 7 days
-        } else if (action === 'decrease') {
-            setToleranceDays(prev => Math.max(prev - 1, 1)); // Min 1 day
+const OneWayFlightSearch = ({ handleSearch }) => {
+
+    const {searchData} = useSearchContext();
+    // console.log('searchData', searchData)
+    // get todays date
+    const today = new Date();
+    const [dateValue, setDateValue] = useState(today);
+    const [passengers, setPassengers] = useState({ adult: 1, children: 0, infant: 0 });
+    const [toleranceDays, setToleranceDays] = useState(1);
+    const [onlyDirectFlight, setOnlyDirectFlight] = useState(false);
+    const [fromLocation, setFromLocation] = useState('ACC'); // Use uppercase to match API response
+    const [toLocation, setToLocation] = useState('');
+    const [selectedAirline, setSelectedAirline] = useState('');
+
+    const handleOneWaySearch = () => {
+        handleSearch('oneway', { fromLocation, toLocation, selectedAirline, dateValue, passengers, toleranceDays, onlyDirectFlight })
+    }
+
+    const [apiAirportsfrom, setApiAirportsfrom] = useState([]);
+    const [apiAirportsto, setApiAirportsto] = useState([]);
+    const [isLoading, setIsLoading] = useState({ from: false, to: false });
+    const searchTimeoutRef = useRef(null);
+  const hasInitializedRef = useRef(false);
+     // Search airports from API
+  const searchAirportsFromAPI = async (query = 'acc', type = 'from') => {
+    console.log('🔍 ======= SearchAirportsFromAPI:', query, 'type:', type);
+    
+    setIsLoading(prev => ({ ...prev, [type]: true }));
+    try {
+      const response = await searchAirports(query);
+      console.log('searchAirports', response.data.airports)
+        if (response.status) {
+          if (type === 'from') {
+            setApiAirportsfrom(response.data.airports || []);
+            console.log('✅ Set apiAirportsfrom:', response.data.airports);
+            // If this is the initial load and we have a default value, ensure it's set
+            if (query === 'acc' && fromLocation === 'ACC') {
+              console.log('🎯 Initial load with acc - fromLocation:', fromLocation);
+            }
+          } else if (type === 'to') {
+            setApiAirportsto(response.data.airports || []);
+            console.log('✅ Set apiAirportsto:', response.data.airports);
+          }
+      } else {
+        console.error('Failed to search airports:', response.message);
+      }
+    } catch (error) {
+      console.error('Error searching airports:', error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, [type]: false }));
+    }
+  };
+    
+    const handleFromSearchChange = (searchValue) => {
+        console.log('🔍 ======= handleFromSearchChange:', searchValue);
+        // Clear existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
         }
+
+        // Set new timeout for debounced search
+        searchTimeoutRef.current = setTimeout(() => {
+            if (searchValue && searchValue.length >= 3) {
+                searchAirportsFromAPI(searchValue, 'from');
+            } else if (searchValue === '') {
+                searchAirportsFromAPI('acc', 'from');
+            }
+        }, 300); // 300ms debounce
     };
+
+    const handleToSearchChange = (searchValue) => {
+        console.log('🔍 ======= handleToSearchChange:', searchValue);
+        // Clear existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        // Set new timeout for debounced search
+        searchTimeoutRef.current = setTimeout(() => {
+            if (searchValue && searchValue.length >= 3) {
+                searchAirportsFromAPI(searchValue, 'to');
+            } else if (searchValue === '') {
+                searchAirportsFromAPI('', 'to');
+            }
+        }, 300); // 300ms debounce
+    };
+
+    useEffect(() => {
+        if (searchData?.origin) {
+            console.log('searchData', searchData)
+            setFromLocation(searchData.origin);
+        }
+        if (searchData?.destination) {
+            setToLocation(searchData.destination);
+            searchAirportsFromAPI(searchData.destination, 'to')
+        }
+        if (searchData?.departureDate) {
+            setDateValue(searchData.departureDate);
+        }
+        if (searchData?.adults || searchData?.children || searchData?.infants) {
+            let passengers = { adult: searchData.adults || 1, children: searchData.children || 0, infant: searchData.infants || 0 };   
+            setPassengers(passengers);
+        }
+        if (searchData?.toleranceDays) {
+            setToleranceDays(searchData.toleranceDays || 1);
+        }
+        if (searchData?.directFlightsOnly) {
+            setOnlyDirectFlight(searchData.directFlightsOnly || false);
+        }
+        if (searchData?.airline) {
+            setSelectedAirline(searchData.selectedAirline || '');
+        }
+        searchAirportsFromAPI('acc', 'from');
+        
+    }, []);
 
     return (
         <div>
@@ -265,14 +404,26 @@ const OneWayFlightSearch = ({ fromLocation, setFromLocation, toLocation, setToLo
                 <div className='border-2 md:mt-0 mt-1 border-[#E7E7E7] w-full rounded-2xl flex flex-col lg:flex-row'>
 
                     <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
-                        <SearchSelect label="From" value={fromLocation} onChange={setFromLocation} />
+                        <SearchSelect
+                            apiAirports={apiAirportsfrom}
+                            isLoading={isLoading.from}
+                            label="From"
+                            value={fromLocation}
+                            onChange={setFromLocation}
+                            onSearchChange={handleFromSearchChange} />
                         <div className='rounded-full h-fit p-2 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
                         </div>
                     </div>
 
                     <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
-                        <SearchSelect label="To" value={toLocation} onChange={setToLocation} />
+                        <SearchSelect 
+                            apiAirports={apiAirportsto}
+                            isLoading={isLoading.to}
+                            label="To" 
+                            value={toLocation} 
+                            onChange={setToLocation}
+                            onSearchChange={handleToSearchChange} />
                     </div>
                     <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
                         <DatePicker
@@ -281,7 +432,7 @@ const OneWayFlightSearch = ({ fromLocation, setFromLocation, toLocation, setToLo
                             placeholder="Select Date"
                             disabled={false}
                             value={dateValue}
-                            onChange={setDateValue}
+                            onChange={(value) => setDateValue(new Date(value))}
                         />
                     </div>
                     <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l border-[#E7E7E7]'>
@@ -324,7 +475,7 @@ const OneWayFlightSearch = ({ fromLocation, setFromLocation, toLocation, setToLo
                             <p className="font-medium text-center text-sm lg:text-base">Tolerance Days</p>
                             <div className="flex items-center space-x-2 rounded-full p-1">
                                 <button
-                                    onClick={() => updateDaysCount('decrease')}
+                                    onClick={() => setToleranceDays(prev => Math.max(prev - 1, 1))}
                                     disabled={toleranceDays <= 1}
                                     className={`
                       w-7 h-7 lg:w-8 lg:h-8 border border-gray-300 bg-[#364A9C]/10 rounded-full flex items-center justify-center 
@@ -342,7 +493,7 @@ const OneWayFlightSearch = ({ fromLocation, setFromLocation, toLocation, setToLo
                                 </span>
 
                                 <button
-                                    onClick={() => updateDaysCount('increase')}
+                                    onClick={() => setToleranceDays(prev => Math.min(prev + 1, 7))}
                                     className="w-7 h-7 lg:w-8 lg:h-8 border border-gray-300 bg-[#364A9C]/10 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
                                 >
                                     <svg className="w-3 h-3 lg:w-4 lg:h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
@@ -365,7 +516,8 @@ const OneWayFlightSearch = ({ fromLocation, setFromLocation, toLocation, setToLo
                         </label>
                     </div>
 
-                    <button className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8' onClick={() => handleSearch('oneway', { fromLocation, toLocation, dateValue, passengers })}>
+                    <button className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8'
+                        onClick={() => handleOneWaySearch()}>
                         Search
                     </button>
                 </div>
@@ -525,8 +677,8 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
     const addMultiCityItem = () => {
         const newItem = {
             id: Date.now(),
-            fromLocation: '',
-            toLocation: '',
+            fromLocation: 'ACC',
+            toLocation: 'CDG',
             dateValue: Date.now(),
             passengers: { adult: 1, children: 0, infant: 0 }
         };
@@ -540,7 +692,7 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
     };
 
     const updateMultiCityItem = (id, updatedItem) => {
-        setMultiCityItems(multiCityItems.map(item => 
+        setMultiCityItems(multiCityItems.map(item =>
             item.id === id ? { ...item, ...updatedItem } : item
         ));
     };
@@ -558,9 +710,9 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
     };
 
     const validateMultiCityForm = () => {
-        return multiCityItems.every(item => 
-            item.fromLocation && 
-            item.toLocation && 
+        return multiCityItems.every(item =>
+            item.fromLocation &&
+            item.toLocation &&
             item.dateValue &&
             item.passengers.adult > 0
         );
@@ -574,10 +726,10 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                         <div className="text-center">
                             <div className='border-2 border-[#E7E7E7] w-full rounded-2xl flex flex-col lg:flex-row'>
                                 <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
-                                    <SearchSelect 
-                                        label="From" 
-                                        value={item.fromLocation} 
-                                        onChange={(value) => updateMultiCityItem(item.id, { fromLocation: value })} 
+                                    <SearchSelect
+                                        label="From"
+                                        value={item.fromLocation}
+                                        onChange={(value) => updateMultiCityItem(item.id, { fromLocation: value })}
                                     />
                                     <div className='rounded-full h-fit p-2 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
@@ -585,13 +737,13 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                                 </div>
 
                                 <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
-                                    <SearchSelect 
-                                        label="To" 
-                                        value={item.toLocation} 
-                                        onChange={(value) => updateMultiCityItem(item.id, { toLocation: value })} 
+                                    <SearchSelect
+                                        label="To"
+                                        value={item.toLocation}
+                                        onChange={(value) => updateMultiCityItem(item.id, { toLocation: value })}
                                     />
                                 </div>
-                                
+
                                 <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
                                     <DatePicker
                                         type="multicity"
@@ -601,7 +753,7 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                                         onChange={(value) => updateMultiCityItem(item.id, { dateValue: value })}
                                     />
                                 </div>
-                                
+
                                 <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l border-[#E7E7E7]'>
                                     <Passengers
                                         value={item.passengers}
@@ -610,7 +762,7 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Delete button - top right corner */}
                         {multiCityItems.length > 1 && (
                             <button
@@ -619,7 +771,7 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                                 title="Remove flight"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zm2-4h2V8H9zm4 0h2V8h-2z"/>
+                                    <path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zm2-4h2V8H9zm4 0h2V8h-2z" />
                                 </svg>
                             </button>
                         )}
@@ -712,8 +864,8 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                     </label>
                 </div>
 
-                <button 
-                    className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8 disabled:opacity-50 disabled:cursor-not-allowed' 
+                <button
+                    className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8 disabled:opacity-50 disabled:cursor-not-allowed'
                     onClick={handleMultiCitySearch}
                     disabled={!validateMultiCityForm()}
                 >

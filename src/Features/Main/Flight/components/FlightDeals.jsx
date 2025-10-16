@@ -51,7 +51,19 @@ const FlightDeals = () => {
   ];
 
   return (
-    <section className="py-16">
+    <>
+      {/* Custom styles for scrollbar hiding */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+      
+      <section className="py-16">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <div className="text-center md:mb-12 mb-4">
@@ -63,20 +75,35 @@ const FlightDeals = () => {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center justify-center space-x-2 mb-8 overflow-x-auto pb-4">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                activeFilter === filter
-                  ? 'bg-[#364A9C] text-white'
-                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
+        <div className="relative">
+          {/* Fade effect for mobile scrolling */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none md:hidden"></div>
+          
+          <div 
+            className="flex items-center md:justify-center justify-start space-x-2 mb-8 overflow-x-auto pb-4 scrollbar-hide" 
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+              scrollBehavior: 'smooth'
+            }}
+          >
+            <div className="flex items-center space-x-2 min-w-max px-4 md:px-0 py-2">
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                    activeFilter === filter
+                      ? 'bg-[#364A9C] text-white'
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Flight Deal Cards */}
@@ -138,6 +165,7 @@ const FlightDeals = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

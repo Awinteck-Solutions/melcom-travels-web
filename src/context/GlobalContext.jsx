@@ -1,11 +1,44 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 
+// Helper function to get stored user data
+const getStoredUserData = () => {
+  // Check if localStorage is available (client-side)
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return {
+      user: null,
+      token: null,
+      isAuthenticated: false
+    };
+  }
+
+  try {
+    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('authToken') || localStorage.getItem('token');
+    console.log('storedToken', storedToken)
+    if (storedUser && storedToken) {
+      return {
+        user: JSON.parse(storedUser),
+        token: storedToken,
+        isAuthenticated: true
+      };
+    }
+  } catch (error) {
+    console.error('Error parsing stored user data:', error);
+  }
+  
+  return {
+    user: null,
+    token: null,
+    isAuthenticated: false
+  };
+};
+
 // Initial state
 const initialState = {
   // Authentication
   isAuthenticated: false,
   user: null,
-  token: localStorage.getItem('token') || null,
+  token: null,
   
   // Shopping Cart
   cart: [],
@@ -199,37 +232,68 @@ export const useGlobalContext = () => {
 export const GlobalProvider = ({ children }) => {
   const [state, dispatch] = useReducer(globalReducer, initialState);
 
-  // Persist token to localStorage when it changes
+  // Persist user data and token to localStorage when they change
   useEffect(() => {
-    if (state.token) {
-      localStorage.setItem('token', state.token);
-    } else {
-      localStorage.removeItem('token');
+    if (typeof window !== 'undefined' && window.localStorage) {
+      if (state.token && state.user) {
+        localStorage.setItem('authToken', state.token);
+        localStorage.setItem('user', JSON.stringify(state.user));
+        console.log('User data stored:', state.user);
+      } else {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        console.log('User data cleared');
+      }
     }
-  }, [state.token]);
+  }, [state.token, state.user]);
 
   // Persist theme to localStorage
   useEffect(() => {
-    localStorage.setItem('theme', state.theme);
-    document.documentElement.setAttribute('data-theme', state.theme);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('theme', state.theme);
+      document.documentElement.setAttribute('data-theme', state.theme);
+    }
   }, [state.theme]);
 
   // Persist language to localStorage
   useEffect(() => {
-    localStorage.setItem('language', state.language);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('language', state.language);
+    }
   }, [state.language]);
 
-  // Load initial theme and language from localStorage
+  // Load initial data from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const savedLanguage = localStorage.getItem('language');
-    
-    if (savedTheme) {
-      dispatch({ type: ACTIONS.SET_THEME, payload: savedTheme });
-    }
-    
-    if (savedLanguage) {
-      dispatch({ type: ACTIONS.SET_LANGUAGE, payload: savedLanguage });
+    if (typeof window !== 'undefined' && window.localStorage) {
+      // Load user data
+      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('authToken') || localStorage.getItem('token');
+      
+      if (storedUser && storedToken) {
+        try {
+          const userData = JSON.parse(storedUser);
+          dispatch({
+            type: ACTIONS.LOGIN_SUCCESS,
+            payload: { user: userData, token: storedToken }
+          });
+          console.log('User data loaded from localStorage:', userData);
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+        }
+      }
+      
+      // Load theme and language
+      const savedTheme = localStorage.getItem('theme');
+      const savedLanguage = localStorage.getItem('language');
+      
+      if (savedTheme) {
+        dispatch({ type: ACTIONS.SET_THEME, payload: savedTheme });
+      }
+      
+      if (savedLanguage) {
+        dispatch({ type: ACTIONS.SET_LANGUAGE, payload: savedLanguage });
+      }
     }
   }, []);
 
@@ -238,6 +302,13 @@ export const GlobalProvider = ({ children }) => {
     dispatch({
       type: ACTIONS.LOGIN_SUCCESS,
       payload: { user: userData, token }
+    });
+  };
+
+  const updateUser = (userUpdates) => {
+    dispatch({
+      type: ACTIONS.UPDATE_USER,
+      payload: userUpdates
     });
   };
 
@@ -293,6 +364,7 @@ export const GlobalProvider = ({ children }) => {
     ...state,
     login,
     logout,
+    updateUser,
     addToCart,
     removeFromCart,
     updateCartItem,

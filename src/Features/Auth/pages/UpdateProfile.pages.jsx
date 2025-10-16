@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useGlobalContext } from '../../../context';
+import { updateProfile, updateProfileWithImage } from '../services/auth.service';
+import { Notifications, notifications } from '@mantine/notifications';
 import Container from '../../../components/Container';
 import Header from '../../../components/Header';
 
 const UpdateProfilePage = () => {
     const navigate = useNavigate();
-    const { user, updateUser } = useGlobalContext();
-    const [showSuccess, setShowSuccess] = useState(false);
+    const { user, updateUser, token } = useGlobalContext();
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [isImageLoading, setIsImageLoading] = useState(false);
+    const fileInputRef = useRef(null);
 
     const validationSchema = Yup.object().shape({
         firstName: Yup.string()
@@ -26,37 +32,52 @@ const UpdateProfilePage = () => {
 
     const formik = useFormik({
         initialValues: {
-            firstName: user?.name?.split(' ')[0] || '',
-            lastName: user?.name?.split(' ').slice(1).join(' ') || '',
-            email: user?.email || ''
+            firstName: user?.firstname || '',
+            lastName: user?.lastname || '',
+            email: user?.email || '',
+            profileImage: user?.image || ''
         },
         validationSchema,
         onSubmit: async (values) => {
             setIsLoading(true);
+            setError('');
             try {
-                // Simulate API call to update profile
-                console.log('Updating profile:', values);
 
-                // Update user in global context
-                const updatedUser = {
-                    ...user,
-                    name: `${values.firstName} ${values.lastName}`,
-                    email: values.email
-                };
+                const formData = new FormData();
+                formData.append('firstname', values.firstName);
+                formData.append('lastname', values.lastName);
+                formData.append('email', values.email);
+    
+                const response = await updateProfileWithImage(formData, token);
 
-                // For demo purposes, we'll just show success
-                setTimeout(() => {
-                    setShowSuccess(true);
-                    setIsLoading(false);
+                if (response.status) {
+                    // Update user in global context
+                    const updatedUser = {
+                        ...user,
+                        firstname: values.firstName,
+                        lastname: values.lastName,
+                        email: values.email
+                    };
+                    updateUser(updatedUser);
 
-                    // Hide success message after 3 seconds
-                    setTimeout(() => {
-                        setShowSuccess(false);
-                    }, 3000);
-                }, 1000);
-
+                    notifications.show({
+                        title: 'Success',
+                        message: 'Your profile has been updated successfully.',
+                        color: 'green',
+                        position: 'top-right',
+                    });
+                } else {
+                    notifications.show({
+                        title: 'Error',
+                        message: response.message || 'Failed to update profile. Please try again.',
+                        color: 'red',
+                        position: 'top-right',
+                    });
+                }
             } catch (error) {
                 console.error('Error updating profile:', error);
+                setError('An unexpected error occurred. Please try again.');
+            } finally {
                 setIsLoading(false);
             }
         }
@@ -66,10 +87,93 @@ const UpdateProfilePage = () => {
         navigate('/profile');
     };
 
+    // Handle image selection
+    const handleImageSelect = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                setError('Please select a valid image file.');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setError('Image size must be less than 5MB.');
+                return;
+            }
+
+            setSelectedImage(file);
+            setError('');
+
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Handle image upload
+    const handleImageUpload = async () => {
+        if (!selectedImage) return;
+
+        setIsImageLoading(true);
+        setError('');
+
+        try {
+            const formData = new FormData();
+            formData.append('profileImage', selectedImage);
+
+            const response = await updateProfileWithImage(formData, token);
+
+            if (response.status) {
+                // Update user in global context with new image
+                const updatedUser = {
+                    ...user,
+                    image: response.data.image || imagePreview
+                };
+                updateUser(updatedUser);
+
+                notifications.show({
+                    title: 'Success',
+                    message: 'Your profile image has been updated successfully.',
+                    color: 'green',
+                    position: 'top-right',
+                });
+
+                setSelectedImage(null);
+                setImagePreview(null);
+            } else {
+                Notifications.show({
+                    title: 'Error',
+                    message: response.message || 'Failed to upload image. Please try again.',
+                    color: 'red',
+                    position: 'top-right',
+                });
+                 }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            setError('An unexpected error occurred. Please try again.');
+        } finally {
+            setIsImageLoading(false);
+        }
+    };
+
+    // Remove selected image
+    const handleRemoveImage = () => {
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     return (
         <Container>
             {/* Header */}
-            <Header currentPage="flights" />
+            <Header currentPage="profile" />
             <div className='relative'>
                 <div className="absolute md:-top-20 -top-12 left-0 w-full h-full">
                     <img src="/contact-dots.svg" alt="stars" className="md:w-1/2 w-4/5 m-auto object-cover" />
@@ -103,29 +207,77 @@ const UpdateProfilePage = () => {
                             <div className="text-center mb-8">
                                 {/* Profile Picture */}
                                 <div className="relative inline-block mb-6">
-                                    <div className="w-24 h-24 bg-[#364A9C] rounded-full flex items-center justify-center mx-auto">
-                                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                    <div className="w-24 h-24 bg-[#364A9C] rounded-full flex items-center justify-center mx-auto overflow-hidden">
+                                        {imagePreview || user?.image ? (
+                                            <img 
+                                                src={imagePreview || user?.image} 
+                                                alt="Profile" 
+                                                className="w-full h-full object-cover rounded-full"
+                                            />
+                                        ) : (
+                                            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        )}
                                     </div>
                                     {/* Edit Icon */}
-                                    <button className="absolute -bottom-1 -right-1 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-300 transition-colors">
+                                    <button 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="absolute -bottom-1 -right-1 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-300 transition-colors"
+                                    >
                                         <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
                                 </div>
 
+                                {/* Hidden file input */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    //png, jpg, jpeg
+                                    accept="image/png, image/jpg, image/jpeg" 
+                                    onChange={handleImageSelect}
+                                    className="hidden"
+                                />
+
+                                {/* Image Upload Actions */}
+                                {selectedImage && (
+                                    <div className="flex justify-center space-x-3 mb-4">
+                                        <button
+                                            onClick={handleImageUpload}
+                                            disabled={isImageLoading}
+                                            className="px-4 py-2 bg-[#364A9C] text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                        >
+                                            {isImageLoading ? 'Uploading...' : 'Upload Image'}
+                                        </button>
+                                        <button
+                                            onClick={handleRemoveImage}
+                                            disabled={isImageLoading}
+                                            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                )}
+
                                 {/* User Name */}
                                 <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                                    {user?.name || 'Honya Bright'}
+                                    {user?.firstname && user?.lastname ? `${user.firstname} ${user.lastname}` : 'User Name'}
                                 </h1>
 
                                 {/* User Email */}
                                 <p className="text-gray-600 text-sm">
-                                    {user?.email || 'Honyabright4278@gmail.com'}
+                                    {user?.email || 'user@example.com'}
                                 </p>
                             </div>
+
+                            {/* Error Message */}
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-sm text-red-600">{error}</p>
+                                </div>
+                            )}
 
                             {/* Update Form */}
                             <form onSubmit={formik.handleSubmit} className="space-y-6">
@@ -206,31 +358,6 @@ const UpdateProfilePage = () => {
                     </div>
                 </div>
             </div>
-            {/* Success Notification */}
-            {showSuccess && (
-                <div className="fixed top-4 right-4 z-50">
-                    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-center space-x-3 transform transition-all duration-300 ease-in-out translate-x-0 opacity-100">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-800">
-                                Your profile has been updated successfully.
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => setShowSuccess(false)}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            )}
         </Container>
     );
 };

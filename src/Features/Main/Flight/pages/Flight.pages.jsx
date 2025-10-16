@@ -1,3 +1,4 @@
+import React, { useMemo, useState } from 'react';
 import Header from '../../../../components/Header';
 import HeroSection from '../components/HeroSection';
 import { useGlobalContext } from '../../../../context';
@@ -7,6 +8,46 @@ import { FlightDeals, Blogs, CountryRecommendations } from '../components';
 
 const FlightPage = () => {
   const { isAuthenticated, user } = useGlobalContext();
+  const [resultLoading, setResultLoading] = useState(false);
+  
+  // Memoize the welcome message to prevent unnecessary re-renders
+  const welcomeMessage = useMemo(() => {
+    if (isAuthenticated) {
+      const userName = user?.firstname && user?.lastname 
+        ? `${user.firstname} ${user.lastname}` 
+        : 'User';
+      return `Welcome back, ${userName}! Ready to explore the world?`;
+    }
+    return 'Sign up or log in to start booking your next adventure.';
+  }, [isAuthenticated, user?.firstname, user?.lastname]);
+
+  // Memoize the user name for the welcome message
+  const userName = useMemo(() => {
+    return user?.firstname && user?.lastname 
+      ? `${user.firstname} ${user.lastname}` 
+      : 'User';
+  }, [user?.firstname, user?.lastname]);
+
+  // Memoize the authentication buttons to prevent re-renders
+  const authButtons = useMemo(() => {
+    if (!isAuthenticated) {
+      return (
+        <>
+          <button className="px-6 py-3 border-2 border-[#364A9C] text-[#364A9C] rounded-lg font-medium hover:bg-[#364A9C] hover:text-white transition-colors">
+            Sign Up
+          </button>
+          <button className="px-6 py-3 bg-[#364A9C] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            Login
+          </button>
+        </>
+      );
+    }
+    return (
+      <button className="px-6 py-3 bg-[#364A9C] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+        View My Bookings
+      </button>
+    );
+  }, [isAuthenticated]);
 
   return (
     <Container>
@@ -25,7 +66,7 @@ const FlightPage = () => {
       <div className='md:mt-[170px] mt-[110px] '>
 
         <div className='px-6'>
-          <FlightSearch />
+        <FlightSearch setResultLoading={setResultLoading} />
         </div>
 
 
@@ -52,27 +93,10 @@ const FlightPage = () => {
             Ready to Book Your Flight?
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            {isAuthenticated
-              ? `Welcome back, ${user?.name}! Ready to explore the world?`
-              : 'Sign up or log in to start booking your next adventure.'
-            }
+            {welcomeMessage}
           </p>
           <div className="flex items-center justify-center space-x-4">
-            {!isAuthenticated && (
-              <>
-                <button className="px-6 py-3 border-2 border-[#364A9C] text-[#364A9C] rounded-lg font-medium hover:bg-[#364A9C] hover:text-white transition-colors">
-                  Sign Up
-                </button>
-                <button className="px-6 py-3 bg-[#364A9C] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                  Login
-                </button>
-              </>
-            )}
-            {isAuthenticated && (
-              <button className="px-6 py-3 bg-[#364A9C] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                View My Bookings
-              </button>
-            )}
+            {authButtons}
           </div>
         </div>
       </section>
@@ -80,4 +104,4 @@ const FlightPage = () => {
   );
 };
 
-export default FlightPage;
+export default React.memo(FlightPage);

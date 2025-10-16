@@ -6,11 +6,14 @@ import { useGlobalContext } from '../../../context';
 import Container from '../../../components/Container';
 import Header from '../../../components/Header';
 import ForgotPassword from '../components/ForgotPassword';
+import { loginUser, googleAuth } from '../services/auth.service';
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
     const { login } = useGlobalContext();
 
@@ -25,26 +28,33 @@ const LoginPage = () => {
 
     const handleSubmit = async (values) => {
         try {
-            // Simulate login API call
-            console.log('Login values:', values);
+            setIsLoading(true);
+            setError('');
 
-            // For demo purposes, simulate successful login
-            const mockUser = {
-                id: 1,
-                name: 'John Doe',
-                email: values.email
-            };
+            // Call the login API
+            const response = await loginUser({
+                email: values.email,
+                password: values.password
+            });
 
-            const mockToken = 'mock-jwt-token-' + Date.now();
+            if (response.status) {
+                // Extract user data and token from response
+                const userData = response.data.user;
+                const token = userData.token; // Token is inside user object
+                
+                // Update global context with user data (handles storage automatically)
+                login(userData, token);
 
-            // Update global context
-            login(mockUser, mockToken);
-
-            // Navigate to dashboard or home
-            navigate('/');
-
+                // Navigate to dashboard or home
+                navigate('/');
+            } else {
+                setError(response.message || 'Login failed. Please try again.');
+            }
         } catch (error) {
             console.error('Login error:', error);
+            setError('An unexpected error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -57,9 +67,38 @@ const LoginPage = () => {
         onSubmit: handleSubmit
     });
 
-    const handleGoogleLogin = () => {
-        // Implement Google OAuth login
-        console.log('Google login clicked');
+    const handleGoogleLogin = async () => {
+        try {
+            setIsLoading(true);
+            setError('');
+
+            // For now, we'll use a mock Google token
+            // In a real implementation, you would integrate with Google OAuth
+            const mockGoogleToken = 'mock-google-token-' + Date.now();
+            
+            const response = await googleAuth({
+                googleToken: mockGoogleToken
+            });
+
+            if (response.status) {
+                // Extract user data and token from response
+                const userData = response.data.user;
+                const token = userData.token; // Token is inside user object
+                
+                // Update global context with user data (handles storage automatically)
+                login(userData, token);
+
+                // Navigate to dashboard or home
+                navigate('/');
+            } else {
+                setError(response.message || 'Google login failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Google login error:', error);
+            setError('An unexpected error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleForgotPassword = () => {
@@ -87,6 +126,13 @@ const LoginPage = () => {
                                 Manage your bookings with ease and enjoy members-only benefits.
                             </p>
                         </div>
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 relative z-10">
+                                {error}
+                            </div>
+                        )}
 
                         {/* Login Form */}
                         <form onSubmit={formik.handleSubmit} className="space-y-6 relative z-10 ">
@@ -174,9 +220,10 @@ const LoginPage = () => {
                             {/* Login Button */}
                             <button
                                 type="submit"
-                                className="w-full bg-[#364A9C] text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-[#364A9C] focus:ring-offset-2 outline-none"
+                                disabled={isLoading}
+                                className="w-full bg-[#364A9C] text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-[#364A9C] focus:ring-offset-2 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Login with email
+                                {isLoading ? 'Logging in...' : 'Login with email'}
                             </button>
                         </form>
 
@@ -194,7 +241,8 @@ const LoginPage = () => {
                         <button
                             type="button"
                             onClick={handleGoogleLogin}
-                            className="w-full bg-white text-gray-700 py-3 px-6 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 outline-none flex items-center justify-center space-x-3"
+                            disabled={isLoading}
+                            className="w-full bg-white text-gray-700 py-3 px-6 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 outline-none flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

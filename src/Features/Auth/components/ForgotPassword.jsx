@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ForgetPasswordModal } from './modals/forgetPasswordModal';
 import { VerifyOtpModal } from './modals/verifyOtpModal';
 import { ResetPasswordModal } from './modals/resetPasswordModal';
+import { forgetPassword } from '../services/auth.service';
+import { notifications } from '@mantine/notifications';
 
 const ForgotPassword = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1); // 1: Email, 2: OTP, 3: Reset Password
@@ -12,12 +14,29 @@ const ForgotPassword = ({ isOpen, onClose }) => {
   const handleEmailSubmit = async (emailData) => {
     setIsLoading(true);
     try {
-      // Simulate API call to send OTP
-      console.log('Sending OTP to:', emailData);
-      setEmail(emailData);
-      setCurrentStep(2);
+      const response = await forgetPassword({email:emailData});
+      
+      if (response.status) {
+        // Success - OTP sent
+        setEmail(emailData.email);
+        setCurrentStep(2);
+        notifications.show({
+          title: 'OTP Sent',
+          message: 'OTP sent to your email',
+          color: 'green',
+          position: 'top-right',
+        });
+      } else {
+        notifications.show({
+          title: 'Error',
+          message: response.message || 'Failed to send OTP. Please try again.',
+          color: 'red',
+          position: 'top-right',
+        });
+      }
     } catch (error) {
       console.error('Error sending OTP:', error);
+      alert('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

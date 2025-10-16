@@ -1,10 +1,21 @@
 import { BASEURL } from "../../constants/api.constant"
 
-
 export const authEndpoints = {
-    LOGIN: `${BASEURL}/auth/admin/login`,
-    REGISTER: `${BASEURL}/auth/admin/register`,
-    FORGOT_PASSWORD: `${BASEURL}/auth/admin/forgot-password`,
-    VERIFY_OTP: `${BASEURL}/auth/admin/verify-otp`,
-    RESET_PASSWORD: `${BASEURL}/auth/admin/reset-password`
+    // Authentication Endpoints
+    REGISTER: `${BASEURL}/auth/register`,
+    LOGIN: `${BASEURL}/auth/login`,
+    GOOGLE_AUTH: `${BASEURL}/auth/google`,
+    FORGET_PASSWORD: `${BASEURL}/auth/forget-password`,
+    CHANGE_PASSWORD: `${BASEURL}/auth/change-password`,
+    
+    // Profile Management Endpoints
+    PROFILE: `${BASEURL}/auth/profile`,
+    // Notifications Endpoints
+    NOTIFICATION_ALERTS: `${BASEURL}/auth/notification-alerts`,
+    NOTIFICATION_ALERT_BY_ID: (id) => `${BASEURL}/auth/notification-alerts/${id}`,
+
+    // FAQs Endpoints
+    GET_ALL_FAQS: `${BASEURL}/faqs`,
+    
+    
 }

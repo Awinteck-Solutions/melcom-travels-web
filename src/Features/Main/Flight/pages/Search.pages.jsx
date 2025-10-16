@@ -1,12 +1,16 @@
 import Header from '../../../../components/Header';
-import { useGlobalContext } from '../../../../context';
+import { useGlobalContext, useSearchContext } from '../../../../context';
 import Container from '../../../../components/Container';
 import FlightSearch from '../components/FlightSearch';
 import SearchResults from '../components/SearchResults';
 import FilterSidebar from '../components/FilterSidebar';
+import { Loader, Alert } from '@mantine/core';
+import { useState } from 'react';
 
 const SearchPage = () => {
   const { isAuthenticated, user } = useGlobalContext();
+  const { loading, error, results, searchData } = useSearchContext();
+  const [resultLoading, setResultLoading] = useState(false);
 
   return (
     <Container>
@@ -25,7 +29,7 @@ const SearchPage = () => {
       <div className='md:mt-[170px] mt-[110px]'>
         {/* Flight Search Form */}
         <div className="mb-8 px-6">
-          <FlightSearch />
+          <FlightSearch setResultLoading={setResultLoading} />
         </div>
 
         {/* Search Results with Filter Sidebar */}
@@ -37,7 +41,41 @@ const SearchPage = () => {
           
           {/* Search Results */}
           <div className="flex-1">
-            <SearchResults />
+            {loading && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader size="lg" color="#364A9C" />
+                <p className="mt-4 text-gray-600">Searching for flights...</p>
+              </div>
+            )}
+            
+            {error && (
+              <Alert color="red" title="Search Error" className="mb-4">
+                {error}
+              </Alert>
+            )}
+            {resultLoading && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader size="lg" color="#364A9C" />
+                <p className="mt-4 text-gray-600">Searching for flights...</p>
+              </div>
+            )}
+            
+            {!loading && !error && !resultLoading && results && (
+              <SearchResults />
+            )}
+            
+            {!loading && !error && !results && searchData && (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No flights found for your search criteria.</p>
+                <p className="text-sm text-gray-500 mt-2">Try adjusting your search parameters.</p>
+              </div>
+            )}
+            
+            {!loading && !error && !results && !searchData && (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Enter your search criteria above to find flights.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

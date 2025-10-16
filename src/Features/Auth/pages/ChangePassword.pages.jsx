@@ -3,17 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useGlobalContext } from '../../../context';
+import { changePassword } from '../services/auth.service';
 import Container from '../../../components/Container';
 import Header from '../../../components/Header';
+import { notifications } from '@mantine/notifications';
 
 const ChangePasswordPage = () => {
     const navigate = useNavigate();
-    const { user } = useGlobalContext();
+    const { token } = useGlobalContext();
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
 
     const validationSchema = Yup.object().shape({
         currentPassword: Yup.string()
@@ -40,27 +41,37 @@ const ChangePasswordPage = () => {
         onSubmit: async (values) => {
             setIsLoading(true);
             try {
-                // Simulate API call to change password
-                console.log('Changing password for user:', user?.email);
-                console.log('Current password:', values.currentPassword);
-                console.log('New password:', values.newPassword);
+                const response = await changePassword({
+                    currentPassword: values.currentPassword,
+                    newPassword: values.newPassword
+                }, token);
 
-                // For demo purposes, simulate successful password change
-                setTimeout(() => {
-                    setShowSuccess(true);
-                    setIsLoading(false);
-
-                    // Clear form
+                if (response.status) {
                     formik.resetForm();
 
-                    // Hide success message after 3 seconds
-                    setTimeout(() => {
-                        setShowSuccess(false);
-                    }, 3000);
-                }, 1000);
-
+                    notifications.show({
+                        title: 'Success',
+                        message: 'Your password has been changed successfully.',
+                        color: 'green',
+                        position: 'top-right',
+                    });
+                } else {
+                    notifications.show({
+                        title: 'Error',
+                        message: response.message || 'Failed to change password. Please try again.',
+                        color: 'red',
+                        position: 'top-right',
+                    });
+                }
             } catch (error) {
                 console.error('Error changing password:', error);
+                notifications.show({
+                    title: 'Error',
+                    message: 'An unexpected error occurred. Please try again.',
+                    color: 'red',
+                    position: 'top-right',
+                });
+            } finally {
                 setIsLoading(false);
             }
         }
@@ -107,7 +118,7 @@ const ChangePasswordPage = () => {
                                     Create a new password to secure your account.
                                 </p>
                             </div>
-
+                          
                             {/* Change Password Form */}
                             <form onSubmit={formik.handleSubmit} className="space-y-6">
                                 {/* Current Password Field */}
@@ -240,32 +251,6 @@ const ChangePasswordPage = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Success Notification */}
-            {showSuccess && (
-                <div className="fixed top-4 right-4 z-50">
-                    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-center space-x-3 transform transition-all duration-300 ease-in-out translate-x-0 opacity-100">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-800">
-                                Your password has been changed successfully.
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => setShowSuccess(false)}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            )}
         </Container>
     );
 };
