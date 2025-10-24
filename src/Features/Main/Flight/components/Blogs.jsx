@@ -159,7 +159,7 @@ const Blogs = () => {
         }
       `}</style>
       
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50l">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <div className="text-center md:mb-12 mb-4">

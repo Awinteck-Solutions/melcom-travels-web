@@ -18,7 +18,9 @@ import {
   fadeInLeft,
   fadeInRight,
   slideInFromTop,
-  rotateIn
+  rotateIn,
+  ScrollAnimation,
+  StaggeredScrollAnimation
 } from '../../../../components/animations';
 
 const FlightPage = () => {
@@ -109,41 +111,37 @@ const FlightPage = () => {
         </div>
 
         {/* Flight Deals Section */}
-        <AnimatedDiv variant={fadeInUp} delay={1.4}>
+        <ScrollAnimation animation="fadeUp">
           <FlightDeals />
-        </AnimatedDiv>
+        </ScrollAnimation>
 
         {/* Country Recommendations Section */}
-        <AnimatedDiv variant={fadeInUp} delay={1.6}>
+        <ScrollAnimation animation="slideLeft">
           <CountryRecommendations />
-        </AnimatedDiv>
+        </ScrollAnimation>
         
         {/* Blogs Section */}
-        <AnimatedDiv variant={fadeInUp} delay={1.8}>
+        <ScrollAnimation animation="fadeUp">
           <Blogs />
-        </AnimatedDiv>
+        </ScrollAnimation>
       </div>
 
       {/* Additional Sections can be added here */}
-      <AnimatedSection className="py-16 bg-white" variant={fadeInUp} delay={2.0}>
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <AnimatedHeading 
-            className="text-3xl font-bold text-gray-900 mb-4"
-            delay={2.2}
-          >
-            Ready to Book Your Flight?
-          </AnimatedHeading>
-          <AnimatedParagraph 
-            className="text-lg text-gray-600 mb-8"
-            delay={2.4}
-          >
-            {welcomeMessage}
-          </AnimatedParagraph>
-          <StaggerContainer className="flex items-center justify-center space-x-4">
-            {authButtons}
-          </StaggerContainer>
+      <ScrollAnimation animation="scaleUp">
+        <div className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Ready to Book Your Flight?
+            </h2>
+            <p className="text-lg text-gray-600 mb-8">
+              {welcomeMessage}
+            </p>
+            <div className="flex items-center justify-center space-x-4">
+              {authButtons}
+            </div>
+          </div>
         </div>
-      </AnimatedSection>
+      </ScrollAnimation>
     </Container>
   );
 };

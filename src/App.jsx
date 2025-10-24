@@ -20,20 +20,27 @@ import FAQsPage from './Features/Auth/pages/FAQs.pages'
 import ChangePasswordPage from './Features/Auth/pages/ChangePassword.pages'
 import UpdateProfilePage from './Features/Auth/pages/UpdateProfile.pages'
 import CheckoutPage from './Features/Auth/pages/Checkout.pages'
+import { ScrollAnimationDemo } from './components/animations'
 
 // Component to handle page transitions
 function AnimatedRoutes() {
   const location = useLocation();
   
+  // Apply earth animation to ALL routes
+  const useEarthAnimation = true;
+  
   return (
-    <PageTransition location={location.pathname}>
+    <PageTransition 
+      location={location.pathname} 
+      useEarthAnimation={useEarthAnimation}
+    >
       <Routes location={location}>
         <Route path='/' element={<FlightPage />} />
         <Route path='/flights/*' element={<FlightRoutes />} />
         <Route path='/contact/*' element={<ContactRoutes />} />
         <Route path='/blogs/*' element={<BlogRoutes />} />
-        {/* <Route path='/hotels/*' element={<HotelRoutes />} />
-        <Route path='/cars/*' element={<CarRoutes />} /> */}
+        <Route path='/hotels/*' element={<HotelRoutes />} />
+        <Route path='/cars/*' element={<CarRoutes />} />
         
         {/* Auth Routes */} 
         <Route path='/login' element={<LoginPage />} />
@@ -46,6 +53,7 @@ function AnimatedRoutes() {
         <Route path='/change-password' element={<ChangePasswordPage />} />
         <Route path='/faqs' element={<FAQsPage />} />
         <Route path='/checkout' element={<CheckoutPage key="checkout" />} />
+        <Route path='/scroll-demo' element={<ScrollAnimationDemo />} />
       </Routes>
     </PageTransition>
   );

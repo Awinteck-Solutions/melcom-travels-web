@@ -12,7 +12,8 @@ import {
   StaggerContainer,
   StaggerItem,
   AnimatedDiv,
-  fadeInUp
+  fadeInUp,
+  ScrollAnimation
 } from '../../../../components/animations';
 
 const SearchPage = () => {
@@ -36,19 +37,22 @@ const SearchPage = () => {
       
       <div className='md:mt-[170px] mt-[110px]'>
         {/* Flight Search Form */}
-        <div className="mb-8 px-6">
-          <FlightSearch setResultLoading={setResultLoading} isResultLoading={resultLoading} />
-        </div>
+        <ScrollAnimation animation="fadeUp">
+          <div className="mb-8 px-6">
+            <FlightSearch setResultLoading={setResultLoading} isResultLoading={resultLoading} />
+          </div>
+        </ScrollAnimation>
 
         {/* Search Results with Filter Sidebar */}
-        <div className="flex gap-8 my-6 px-6 py-4">
-          {/* Filter Sidebar */}
-          <div className="hidden lg:block">
-            <FilterSidebar />
-          </div>
-          
-          {/* Search Results */}
-          <div className="flex-1">
+        <ScrollAnimation animation="slideLeft">
+          <div className="flex gap-8 my-6 px-6 py-4">
+            {/* Filter Sidebar */}
+            <div className="hidden lg:block">
+              <FilterSidebar />
+            </div>
+            
+            {/* Search Results */}
+            <div className="flex-1">
             {loading && (
               <div className="flex flex-col items-center justify-center py-12">
                 <LoadingSpinner size={60} color="#364A9C" />
@@ -84,8 +88,9 @@ const SearchPage = () => {
                 <p className="text-gray-600">Enter your search criteria above to find flights.</p>
               </div>
             )}
+            </div>
           </div>
-        </div>
+        </ScrollAnimation>
       </div>
     </Container>
   );

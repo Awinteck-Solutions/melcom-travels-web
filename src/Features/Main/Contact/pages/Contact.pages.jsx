@@ -7,6 +7,7 @@ import Container from '../../../../components/Container';
 import { useGlobalContext } from '../../../../context';
 import { submitContactForm, getContactInfo } from '../services/Contact.services';
 import { notifications } from '@mantine/notifications';
+import { ScrollAnimation, StaggeredScrollAnimation } from '../../../../components/animations';
 
 const ContactPage = () => {
   const { isAuthenticated, user } = useGlobalContext();
@@ -118,24 +119,27 @@ const ContactPage = () => {
       <div className=''>
         <div className='px-6'>
           {/* Hero Section */}
-          <div className="relative pb-20 rounded-2xl">
-           <div className="relative max-w-7xl mx-auto px-6 text-center">
-              <h1 className=" text-gray-400 mb-1 tracking-wider">
-                CONTACT US
-              </h1>
-              <h2 className="md:text-3xl font-bold text-gray-800 leading-tight">
-                We're Here to Help You Travel Better
-              </h2>
+          <ScrollAnimation animation="fadeUp">
+            <div className="relative pb-20 rounded-2xl">
+             <div className="relative max-w-7xl mx-auto px-6 text-center">
+                <h1 className=" text-gray-400 mb-1 tracking-wider">
+                  CONTACT US
+                </h1>
+                <h2 className="md:text-3xl font-bold text-gray-800 leading-tight">
+                  We're Here to Help You Travel Better
+                </h2>
+              </div>
             </div>
-          </div>
+          </ScrollAnimation>
 
           {/* Main Content */}
           <div className="max-w-7xl mx-auto px-6 pb-20">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               
               {/* Left Column - Contact Options */}
-              <div className="space-y-2">
-                <h3 className="text-3xl font-bold text-gray-800 mb-8">Contact Options</h3>
+              <ScrollAnimation animation="slideLeft">
+                <div className="space-y-2">
+                  <h3 className="text-3xl font-bold text-gray-800 mb-8">Contact Options</h3>
                 
                 {/* Live Chat */}
                 <div className="flex items-start space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-pointer group">
@@ -192,11 +196,13 @@ const ContactPage = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+                </div>
+              </ScrollAnimation>
 
               {/* Right Column - Support Form */}
-              <div>
-                <h3 className="text-3xl font-bold text-gray-800 mb-8">Support Form</h3>
+              <ScrollAnimation animation="slideRight">
+                <div>
+                  <h3 className="text-3xl font-bold text-gray-800 mb-8">Support Form</h3>
                 
                 <form onSubmit={formik.handleSubmit} className="space-y-6 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -353,7 +359,8 @@ const ContactPage = () => {
                     {isLoading ? 'Sending...' : 'Submit'}
                   </button>
                 </form>
-              </div>
+                </div>
+              </ScrollAnimation>
             </div>
           </div>
         </div>

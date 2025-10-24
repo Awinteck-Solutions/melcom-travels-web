@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAllBlogs, getBlogCategories } from '../services/Blog.services';
 import { notifications } from '@mantine/notifications';
 import { Loader } from '@mantine/core';
+import { ScrollAnimation, StaggeredScrollAnimation } from '../../../../components/animations';
 
 const BlogPage = () => {
     const { isAuthenticated, user } = useGlobalContext();
@@ -113,16 +114,19 @@ const BlogPage = () => {
                 <section className="mb-4">
                     <div className="max-w-7xl mx-auto px-6 py-10">
                         {/* Section Header */}
-                        <div className="text-center md:mb-12 mb-8">
-                            <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">DISCOVER</p>
-                            <h1 className="md:text-4xl text-2xl font-bold text-gray-900 mb-4">Travel Blog & Guides</h1>
-                            <p className="md:text-lg text-base text-gray-600 max-w-3xl mx-auto">
-                                Our latest blog posts and travel guides
-                            </p>
-                        </div>
+                        <ScrollAnimation animation="fadeUp">
+                            <div className="text-center md:mb-12 mb-8">
+                                <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">DISCOVER</p>
+                                <h1 className="md:text-4xl text-2xl font-bold text-gray-900 mb-4">Travel Blog & Guides</h1>
+                                <p className="md:text-lg text-base text-gray-600 max-w-3xl mx-auto">
+                                    Our latest blog posts and travel guides
+                                </p>
+                            </div>
+                        </ScrollAnimation>
 
                         {/* Filter Tabs */}
-                        <div className="relative">
+                        <ScrollAnimation animation="slideLeft">
+                            <div className="relative">
                             {/* Fade effect for mobile scrolling */}
                             <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none md:hidden"></div>
                             
@@ -160,7 +164,8 @@ const BlogPage = () => {
                                 ))}
                             </div>
                             </div>
-                        </div>
+                            </div>
+                        </ScrollAnimation>
 
                         {/* Loading State */}
                         {isLoading && (
@@ -173,11 +178,13 @@ const BlogPage = () => {
 
                         {/* Blog Post Cards */}
                         {!isLoading && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2">
-                                {filteredPosts.map((post) => (
-                                    <BlogCard key={post.id} post={post} variant="default" />
-                                ))}
-                            </div>
+                            <StaggeredScrollAnimation delay={0.1}>
+                                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2">
+                                    {filteredPosts.map((post) => (
+                                        <BlogCard key={post.id} post={post} variant="default" />
+                                    ))}
+                                </div>
+                            </StaggeredScrollAnimation>
                         )}
 
                         {/* No Results Message */}
