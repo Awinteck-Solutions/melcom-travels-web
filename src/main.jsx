@@ -8,7 +8,7 @@ import { GlobalProvider, SearchProvider } from './context';
 
 createRoot(document.getElementById('root')).render(
   // remove strict mode
-  // <StrictMode>
+  <StrictMode>
     <GlobalProvider>
       <SearchProvider>
         <MantineProvider withGlobalStyles withNormalizeCSS>
@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')).render(
         </MantineProvider>
       </SearchProvider>
     </GlobalProvider>
-  // </StrictMode >
+  </StrictMode >
   ,
   
 )
