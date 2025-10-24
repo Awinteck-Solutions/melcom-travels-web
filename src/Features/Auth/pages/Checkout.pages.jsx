@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGlobalContext } from '../../../context';
+import { useSearchContext } from '../../../context/SearchContext';
 import Container from '../../../components/Container';
 import Header from '../../../components/Header';
 import { Select, TextInput, Button } from '@mantine/core';
@@ -12,41 +13,88 @@ const CheckoutPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useGlobalContext();
-    const [passengerData, setPassengerData] = useState({
-        adult1: {
-            title: '',
-            firstName: '',
-            lastName: '',
-            email: '',
-            gender: '',
-            middleName: '',
-            dateOfBirth: null,
-            nationality: '',
-            phoneNumber: ''
-        },
-        adult2: {
-            title: '',
-            firstName: '',
-            lastName: '',
-            email: '',
-            gender: '',
-            middleName: '',
-            dateOfBirth: null,
-            nationality: '',
-            phoneNumber: ''
-        },
-        infant3: {
-            title: '',
-            firstName: '',
-            lastName: '',
-            email: '',
-            gender: '',
-            middleName: '',
-            dateOfBirth: null,
-            nationality: '',
-            phoneNumber: ''
+    const { searchData } = useSearchContext();
+    
+    // This component now supports dynamic passenger forms based on stored booking data
+    // The booking data includes both flight information and passenger counts from the search
+    
+    // Initialize passenger data structure
+    const initializePassengerData = (passengerCounts) => {
+        const data = {};
+        let passengerIndex = 1;
+        
+        // Add adults
+        for (let i = 0; i < passengerCounts.adult; i++) {
+            data[`adult${passengerIndex}`] = {
+                title: '',
+                firstName: '',
+                lastName: '',
+                email: '',
+                gender: '',
+                middleName: '',
+                dateOfBirth: null,
+                nationality: '',
+                phoneNumber: '',
+                type: 'adult'
+            };
+            passengerIndex++;
         }
-    });
+        
+        // Add children
+        for (let i = 0; i < passengerCounts.children; i++) {
+            data[`child${passengerIndex}`] = {
+                title: '',
+                firstName: '',
+                lastName: '',
+                email: '',
+                gender: '',
+                middleName: '',
+                dateOfBirth: null,
+                nationality: '',
+                phoneNumber: '',
+                type: 'child'
+            };
+            passengerIndex++;
+        }
+        
+        // Add infants
+        for (let i = 0; i < passengerCounts.infant; i++) {
+            data[`infant${passengerIndex}`] = {
+                title: '',
+                firstName: '',
+                lastName: '',
+                email: '',
+                gender: '',
+                middleName: '',
+                dateOfBirth: null,
+                nationality: '',
+                phoneNumber: '',
+                type: 'infant'
+            };
+            passengerIndex++;
+        }
+        
+        return data;
+    };
+    
+    // Get passenger counts from search data or use defaults
+    const getPassengerCounts = () => {
+        if (searchData) {
+            const counts = {
+                adult: searchData.adults || 1,
+                children: searchData.children || 0,
+                infant: searchData.infants || 0
+            };
+            console.log('Passenger counts from search context:', counts);
+            return counts;
+        }
+        // Fallback to default if no search data
+        console.log('No search data available, using default passenger counts');
+        return { adult: 1, children: 0, infant: 0 };
+    };
+    
+    const [passengerCounts, setPassengerCounts] = useState(getPassengerCounts());
+    const [passengerData, setPassengerData] = useState(initializePassengerData(passengerCounts));
 
     // Default flight data (fallback)
     const defaultFlight = {
@@ -77,31 +125,59 @@ const CheckoutPage = () => {
         console.log('Checkout page mounted');
         console.log('Location state:', location.state);
         console.log('Current pathname:', location.pathname);
+        console.log('Search data:', searchData);
 
         // Check sessionStorage first (since we're using window.location.href)
         try {
-            const storedFlight = sessionStorage.getItem('selectedFlight');
-            if (storedFlight) {
-                const parsedFlight = JSON.parse(storedFlight);
-                console.log('Flight data received from sessionStorage:', parsedFlight);
-                setFlight(parsedFlight);
+            const storedBookingData = sessionStorage.getItem('selectedFlight');
+            if (storedBookingData) {
+                const parsedBookingData = JSON.parse(storedBookingData);
+                console.log('Booking data received from sessionStorage:', parsedBookingData);
+                
+                // Handle both old format (just flight) and new format (booking data with passenger info)
+                if (parsedBookingData.flight) {
+                    // New format: booking data with flight and passenger info
+                    setFlight(parsedBookingData.flight);
+                    
+                    // Use passenger info from stored booking data
+                    if (parsedBookingData.passengerInfo) {
+                        const storedPassengerCounts = {
+                            adult: parsedBookingData.passengerInfo.adults || 1,
+                            children: parsedBookingData.passengerInfo.children || 0,
+                            infant: parsedBookingData.passengerInfo.infants || 0
+                        };
+                        console.log('Using stored passenger counts:', storedPassengerCounts);
+                        setPassengerCounts(storedPassengerCounts);
+                        setPassengerData(initializePassengerData(storedPassengerCounts));
+                    }
+                } else {
+                    // Old format: just flight data
+                    setFlight(parsedBookingData);
+                }
+                
                 // Clear sessionStorage after use
                 sessionStorage.removeItem('selectedFlight');
                 return;
             }
         } catch (error) {
-            console.error('Error parsing stored flight data:', error);
+            console.error('Error parsing stored booking data:', error);
         }
 
         // Check if flight data was passed from the booking flow (React Router)
         if (location.state && location.state.flight) {
             console.log('Flight data received from location state:', location.state.flight);
             setFlight(location.state.flight);
-        } else {
+        } else if (!sessionStorage.getItem('selectedFlight')) {
             console.log('No flight data received, using default');
             console.log('Using default flight data:', defaultFlight);
         }
-    }, [location.state, location.pathname]);
+
+        // Initialize passenger data based on search context (fallback)
+        const counts = getPassengerCounts();
+        console.log('Passenger counts from search context:', counts);
+        setPassengerCounts(counts);
+        setPassengerData(initializePassengerData(counts));
+    }, [location.state, location.pathname, searchData]);
 
     const handleInputChange = (passengerType, field, value) => {
         setPassengerData(prev => ({
@@ -114,11 +190,15 @@ const CheckoutPage = () => {
     };
 
     const handleCheckout = () => {
+        // Calculate total passengers
+        const totalPassengers = passengerCounts.adult + passengerCounts.children + passengerCounts.infant;
+        
         // Handle checkout logic here
         const checkoutData = {
             flight: flight,
             passengers: passengerData,
-            totalPrice: ((flight.price * 3) + ((flight.price * 3) * 0.15) - ((flight.price * 3) * 0.05)).toFixed(0)
+            passengerCounts: passengerCounts,
+            totalPrice: ((flight.price * totalPassengers) + ((flight.price * totalPassengers) * 0.15) - ((flight.price * totalPassengers) * 0.05)).toFixed(0)
         };
         console.log('Checkout data:', checkoutData);
         // navigate('/confirm-booking');
@@ -131,7 +211,45 @@ const CheckoutPage = () => {
     };
 
 
-    const PassengerForm = ({ passengerType, title }) => (
+    // Generate passenger forms dynamically
+    const generatePassengerForms = () => {
+        const forms = [];
+        const passengerKeys = Object.keys(passengerData);
+        
+        passengerKeys.forEach((key, index) => {
+            const passenger = passengerData[key];
+            const passengerNumber = index + 1;
+            let title = '';
+            
+            // Determine title based on passenger type
+            switch (passenger.type) {
+                case 'adult':
+                    title = `Adult ${passengerNumber}`;
+                    break;
+                case 'child':
+                    title = `Child ${passengerNumber}`;
+                    break;
+                case 'infant':
+                    title = `Infant ${passengerNumber}`;
+                    break;
+                default:
+                    title = `Passenger ${passengerNumber}`;
+            }
+            
+            forms.push(
+                <PassengerForm 
+                    key={key} 
+                    passengerType={key} 
+                    title={title}
+                    passengerTypeLabel={passenger.type}
+                />
+            );
+        });
+        
+        return forms;
+    };
+
+    const PassengerForm = ({ passengerType, title, passengerTypeLabel }) => (
         <div className="bg-white rounded-xl p-6 mb-6 shadow-sm border">
             <h3 className="text-xl font-bold text-gray-800 mb-6">{title}</h3>
 
@@ -140,7 +258,7 @@ const CheckoutPage = () => {
                     label="Title *"
                     placeholder="Select your title (Mr, Mrs, Ms, Dr, etc.)"
                     data={['Mr', 'Mrs', 'Ms', 'Dr', 'Prof']}
-                    value={passengerData[passengerType].title}
+                    value={passengerData[passengerType]?.title || ''}
                     onChange={(value) => handleInputChange(passengerType, 'title', value)}
                     required
                 />
@@ -148,7 +266,7 @@ const CheckoutPage = () => {
                 <TextInput
                     label="First Name *"
                     placeholder="Enter first name"
-                    value={passengerData[passengerType].firstName}
+                    value={passengerData[passengerType]?.firstName || ''}
                     onChange={(e) => handleInputChange(passengerType, 'firstName', e.target.value)}
                     required
                 />
@@ -156,7 +274,7 @@ const CheckoutPage = () => {
                 <TextInput
                     label="Last Name *"
                     placeholder="Enter last name"
-                    value={passengerData[passengerType].lastName}
+                    value={passengerData[passengerType]?.lastName || ''}
                     onChange={(e) => handleInputChange(passengerType, 'lastName', e.target.value)}
                     required
                 />
@@ -165,7 +283,7 @@ const CheckoutPage = () => {
                     label="Email Address *"
                     placeholder="Enter email address"
                     type="email"
-                    value={passengerData[passengerType].email}
+                    value={passengerData[passengerType]?.email || ''}
                     onChange={(e) => handleInputChange(passengerType, 'email', e.target.value)}
                     required
                 />
@@ -174,7 +292,7 @@ const CheckoutPage = () => {
                     label="Gender *"
                     placeholder="Select gender"
                     data={['Male', 'Female', 'Other']}
-                    value={passengerData[passengerType].gender}
+                    value={passengerData[passengerType]?.gender || ''}
                     onChange={(value) => handleInputChange(passengerType, 'gender', value)}
                     required
                 />
@@ -182,7 +300,7 @@ const CheckoutPage = () => {
                 <TextInput
                     label="Middle Name *"
                     placeholder="Enter your middle name"
-                    value={passengerData[passengerType].middleName}
+                    value={passengerData[passengerType]?.middleName || ''}
                     onChange={(e) => handleInputChange(passengerType, 'middleName', e.target.value)}
                     required
                 />
@@ -190,7 +308,7 @@ const CheckoutPage = () => {
                 <DatePickerInput
                     label="Date of birth *"
                     placeholder="Select your birth date"
-                    value={passengerData[passengerType].dateOfBirth}
+                    value={passengerData[passengerType]?.dateOfBirth || null}
                     onChange={(value) => handleInputChange(passengerType, 'dateOfBirth', value)}
                     required
                 />
@@ -199,7 +317,7 @@ const CheckoutPage = () => {
                     label="Nationality *"
                     placeholder="Select your country of citizenship"
                     data={['Ghana', 'Nigeria', 'Kenya', 'South Africa', 'United States', 'United Kingdom', 'Canada', 'Germany', 'France', 'Netherlands']}
-                    value={passengerData[passengerType].nationality}
+                    value={passengerData[passengerType]?.nationality || ''}
                     onChange={(value) => handleInputChange(passengerType, 'nationality', value)}
                     required
                 />
@@ -207,7 +325,7 @@ const CheckoutPage = () => {
                 <TextInput
                     label="Phone number *"
                     placeholder="XXX XXX XXXX"
-                    value={passengerData[passengerType].phoneNumber}
+                    value={passengerData[passengerType]?.phoneNumber || ''}
                     onChange={(e) => handleInputChange(passengerType, 'phoneNumber', e.target.value)}
                     required
                 />
@@ -215,55 +333,63 @@ const CheckoutPage = () => {
         </div>
     );
 
-    const CartSummary = () => (
-        <div className="bg-white rounded-xl p-6 shadow-sm border sticky top-6 z-10 max-h-[calc(100vh-6rem)] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-800 mb-6">My Cart</h3>
+    const CartSummary = () => {
+        const totalPassengers = passengerCounts.adult + passengerCounts.children + passengerCounts.infant;
+        const basePrice = flight.price * totalPassengers;
+        const taxes = basePrice * 0.15;
+        const discount = basePrice * 0.05;
+        const totalPrice = basePrice + taxes - discount;
 
-            <div className="flex items-center space-x-3 mb-4">
-                <div className='rounded-full overflow-hidden bg-gray-100 p-2'>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 576 512"><path fill="#364A9C" d="M372 143.9L172.7 40.2c-8-4.1-17.3-4.8-25.7-1.7l-41.1 15c-10.3 3.7-13.8 16.4-7.1 25l101.5 127.9l-100.2 36.4L40 206.2c-6.2-3.8-13.8-4.5-20.7-2.1l-16.3 6c-9.4 3.4-13.4 14.5-8.3 23.1L48.3 325c15.6 26.7 48.1 38.4 77.1 27.8l12.9-4.7l398.4-145c29.1-10.6 44-42.7 33.5-71.8s-42.7-44-71.8-33.5zM32.2 448c-17.7 0-32 14.3-32 32s14.3 32 32 32h512c17.7 0 32-14.3 32-32s-14.3-32-32-32z" /></svg>
+        return (
+            <div className="bg-white rounded-xl p-6 shadow-sm border sticky top-6 z-10 max-h-[calc(100vh-6rem)] overflow-y-auto">
+                <h3 className="text-xl font-bold text-gray-800 mb-6">My Cart</h3>
+
+                <div className="flex items-center space-x-3 mb-4">
+                    <div className='rounded-full overflow-hidden bg-gray-100 p-2'>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 576 512"><path fill="#364A9C" d="M372 143.9L172.7 40.2c-8-4.1-17.3-4.8-25.7-1.7l-41.1 15c-10.3 3.7-13.8 16.4-7.1 25l101.5 127.9l-100.2 36.4L40 206.2c-6.2-3.8-13.8-4.5-20.7-2.1l-16.3 6c-9.4 3.4-13.4 14.5-8.3 23.1L48.3 325c15.6 26.7 48.1 38.4 77.1 27.8l12.9-4.7l398.4-145c29.1-10.6 44-42.7 33.5-71.8s-42.7-44-71.8-33.5zM32.2 448c-17.7 0-32 14.3-32 32s14.3 32 32 32h512c17.7 0 32-14.3 32-32s-14.3-32-32-32z" /></svg>
+                    </div>
+                    <div>
+                        <div className="font-medium">{flight.fromCode} to {flight.toCode}</div>
+                        <div className="text-sm text-gray-600">Economy: {flight.flightType === 'one-way' ? 'One Way' : 'Round Trip'}</div>
+                    </div>
                 </div>
-                <div>
-                    <div className="font-medium">{flight.fromCode} to {flight.toCode}</div>
-                    <div className="text-sm text-gray-600">Economy: {flight.flightType === 'one-way' ? 'One Way' : 'Round Trip'}</div>
+
+                <div className="border-t border-gray-200 my-4"></div>
+
+                <div className="space-y-3 mb-4">
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Flights x {totalPassengers} Traveller{totalPassengers > 1 ? 's' : ''}</span>
+                        <span className="font-medium">GH₵{basePrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Taxes</span>
+                        <span className="font-medium">GH₵{taxes.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Discount</span>
+                        <span className="font-medium text-red-600">-GH₵{discount.toFixed(0)}</span>
+                    </div>
                 </div>
+
+                <div className="border-t border-gray-200 my-4"></div>
+
+                <div className="flex justify-between items-center mb-6">
+                    <span className="text-lg font-semibold">Trip Total</span>
+                    <span className="text-2xl font-bold text-gray-800">GH₵ {totalPrice.toFixed(0)}</span>
+                </div>
+
+                <Button
+                    fullWidth
+                    size="lg"
+                    color="#364A9C"
+                    onClick={handleCheckout}
+                    className="bg-blue-600 hover:bg-blue-700"
+                >
+                    Checkout
+                </Button>
             </div>
-
-            <div className="border-t border-gray-200 my-4"></div>
-
-            <div className="space-y-3 mb-4">
-                <div className="flex justify-between">
-                    <span className="text-gray-600">Flights x 3 Travellers</span>
-                    <span className="font-medium">GH₵{(flight.price * 3).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-gray-600">Taxes</span>
-                    <span className="font-medium">GH₵{((flight.price * 3) * 0.15).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-gray-600">Discount</span>
-                    <span className="font-medium text-red-600">-GH₵{((flight.price * 3) * 0.05).toFixed(0)}</span>
-                </div>
-            </div>
-
-            <div className="border-t border-gray-200 my-4"></div>
-
-            <div className="flex justify-between items-center mb-6">
-                <span className="text-lg font-semibold">Trip Total</span>
-                <span className="text-2xl font-bold text-gray-800">GH₵ {((flight.price * 3) + ((flight.price * 3) * 0.15) - ((flight.price * 3) * 0.05)).toFixed(0)}</span>
-            </div>
-
-            <Button
-                fullWidth
-                size="lg"
-                color="#364A9C"
-                onClick={handleCheckout}
-                className="bg-blue-600 hover:bg-blue-700"
-            >
-                Checkout
-            </Button>
-        </div>
-    );
+        );
+    };
 
     return (
         <Container>
@@ -273,7 +399,7 @@ const CheckoutPage = () => {
 
                 <div className='relative'>
                     <div className="absolute md:-top-20 -top-12 left-0 w-full h-full">
-                        <img src="/contact-dots.svg" alt="stars" className="md:w-1/2 w-4/5 m-auto object-cover" />
+                        <img src="/contact-dots.svg" alt="stars" className="lg:hidden md:w-1/2 w-4/5 m-auto object-cover" />
                     </div>
                 </div>
 
@@ -301,16 +427,15 @@ const CheckoutPage = () => {
 
                                 <div className='mb-4 border rounded-[35px] bg-[#364A9C]'>
                                     <OneWayFlightResultCard
-                                        key={flight.id || index}
+                                        key={flight.id || 'default'}
                                         flight={flight}
                                     // onBookNow={handleBookNow}
                                     // onViewDetails={handleViewDetails}
                                     />
                                 </div>
 
-                                <PassengerForm passengerType="adult1" title="Adult-1" />
-                                <PassengerForm passengerType="adult2" title="Adult-2" />
-                                <PassengerForm passengerType="infant3" title="Infant-3" />
+                                {/* Dynamic Passenger Forms */}
+                                {generatePassengerForms()}
                             </div>
 
                             {/* Right Column - Cart Summary */}

@@ -1,7 +1,7 @@
 const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white py-12 rounded-t-2xl">
-      <div className="mx-10 mx-auto px-6">
+      <div className="lg:mx-20 mx-10 mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
@@ -9,7 +9,7 @@ const Footer = () => {
             <img className='h-20 w-20 md:h-28 md:w-28' src='/logo.svg' alt="MELCOM" />
             </div>
 
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-400 mb-4 max-w-sm">
               Your trusted partner for unforgettable travel experiences.
               Discover the world with our premium flight, hotel, and tour packages.
             </p>

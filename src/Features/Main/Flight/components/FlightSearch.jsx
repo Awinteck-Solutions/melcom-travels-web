@@ -10,6 +10,17 @@ import { useNavigate } from 'react-router-dom';
 import { updateDaysCount } from '../../../../utils/page.helper';
 import { searchAirports, searchFlights } from '../services/Flight.services';
 import { notifications } from '@mantine/notifications';
+import { 
+  AnimatedDiv, 
+  AnimatedButton, 
+  StaggerContainer,
+  StaggerItem,
+  fadeInUp,
+  fadeInLeft,
+  fadeInRight,
+  scaleIn,
+  LoadingButton
+} from '../../../../components/animations';
 
 const FlightSearch = ({ setResultLoading, isResultLoading }) => {
     const [dateValue, setDateValue] = useState(null);
@@ -177,7 +188,11 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
 
 
     return (
-        <div className="relative bg-white border-2 border-[#364A9C] rounded-2xl p-3 md:p-5 max-w-7xl mx-auto px-3 md:px-6">
+        <AnimatedDiv 
+            variant={scaleIn} 
+            delay={0}
+            className="relative bg-white border-2 border-[#364A9C] rounded-2xl p-3 md:p-5 max-w-7xl mx-auto px-3 md:px-6"
+        >
             <Tabs defaultValue="oneway" variant="pills" color="#364A9C">
                 <div className='flex flex-col lg:flex-row lg:items-start md:gap-4 lg:gap-0'>
                     <Tabs.List
@@ -278,7 +293,7 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
                 </Tabs.Panel>
             </Tabs>
 
-        </div>
+        </AnimatedDiv>
     );
 };
 
@@ -520,12 +535,14 @@ const OneWayFlightSearch = ({handleSearch, isResultLoading=false}) => {
                         </label>
                     </div>
 
-                    <button
-                        disabled={isResultLoading}
+                    <LoadingButton
+                        isLoading={isResultLoading}
+                        loadingText="Searching..."
                         className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8'
-                        onClick={() => handleOneWaySearch()}>
-                        {isResultLoading ? 'Searching...' : 'Search'}
-                    </button>
+                        onClick={() => handleOneWaySearch()}
+                    >
+                        Search
+                    </LoadingButton>
                 </div>
             </div>
         </div>
@@ -661,9 +678,13 @@ const RoundTripFlightSearch = ({ fromLocation, setFromLocation, toLocation, setT
                         </label>
                     </div>
 
-                    <button className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8' onClick={() => handleSearch('roundtrip', { fromLocation, toLocation, dateValue, returnDateValue, passengers })}>
+                    <AnimatedButton 
+                        className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8' 
+                        onClick={() => handleSearch('roundtrip', { fromLocation, toLocation, dateValue, returnDateValue, passengers })}
+                        delay={0.2}
+                    >
                         Search
-                    </button>
+                    </AnimatedButton>
                 </div>
             </div>
         </div>
@@ -870,13 +891,14 @@ const MultiCityFlightSearch = ({ selectedAirline, setSelectedAirline, toleranceD
                     </label>
                 </div>
 
-                <button
+                <AnimatedButton
                     className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8 disabled:opacity-50 disabled:cursor-not-allowed'
                     onClick={handleMultiCitySearch}
                     disabled={!validateMultiCityForm()}
+                    delay={0.2}
                 >
                     Search Multi-City
-                </button>
+                </AnimatedButton>
             </div>
         </div>
     );

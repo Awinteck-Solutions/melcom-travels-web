@@ -119,62 +119,7 @@ const SearchResults = () => {
         }
         
         // Fallback to mock data
-        return [
-        {
-            id: 1,
-            from: 'Accra - Kotoka (ACC)',
-            fromCode: 'ACC',
-            to: 'Abidjan - Felix Houphouet Boigny (ABJ)',
-            toCode: 'ABJ',
-            airlineLogo: '/emirates.svg',
-            departure: new Date('2025-01-15T08:30:00'),
-            arrival: new Date('2025-01-15T14:45:00'),
-            airline: 'Emirates',
-            planeType: 'Boeing 777-300ER',
-            flightType: 'round-trip',
-            returnDate: new Date('2025-01-15T14:45:00'),
-            price: 750,
-            duration: '6h 15m',
-            stops: 1,
-            flightNumber: 'EK1234',
-            class: 'Q',
-            segment: null
-        },
-        {
-            id: 2,
-            from: 'Accra - Kotoka (ACC)',
-            fromCode: 'ACC',
-            to: 'Abidjan - Felix Houphouet Boigny (ABJ)',
-            toCode: 'ABJ',
-            airlineLogo: '/emirates.svg',
-            departure: new Date('2025-01-15T10:15:00'),
-            arrival: new Date('2025-01-15T18:30:00'),
-            airline: 'British Airways',
-            flightType: 'one-way',
-            price: 680,
-            duration: '8h 15m',
-            stops: 0,
-            flightNumber: 'BA4567',
-            segment: null
-        },
-        {
-            id: 3,
-            from: 'Accra - Kotoka (ACC)',
-            fromCode: 'ACC',
-            to: 'Abidjan - Felix Houphouet Boigny (ABJ)',
-            toCode: 'ABJ',
-            airlineLogo: '/emirates.svg',
-            departure: new Date('2025-01-15T14:20:00'),
-            arrival: new Date('2025-01-15T22:45:00'),
-            airline: 'Lufthansa',
-            flightType: 'one-way',
-            price: 920,
-            duration: '8h 25m',
-            stops: 1,
-            flightNumber: 'LH7890',
-            segment: null
-        }
-        ];
+        return [];
     }, [results?.results?.flights, tripType]);
 
 
@@ -182,17 +127,30 @@ const SearchResults = () => {
     const handleBookNow = (flight) => {
         console.log('=== BOOK NOW CLICKED ===');
         console.log('Booking flight:', flight);
+        console.log('Search data (passenger info):', searchData);
         console.log('Attempting to navigate to /checkout');
         
         // Show alert to confirm click is working
         // alert('Book Now clicked! Navigating to checkout...');
         
-        // Store flight data in sessionStorage
+        // Create booking data object with both flight and passenger information
+        const bookingData = {
+            flight: flight,
+            passengerInfo: {
+                adults: searchData?.adults || 1,
+                children: searchData?.children || 0,
+                infants: searchData?.infants || 0,
+                totalPassengers: (searchData?.adults || 1) + (searchData?.children || 0) + (searchData?.infants || 0)
+            },
+            searchData: searchData // Store the complete search data for reference
+        };
+        
+        // Store booking data in sessionStorage
         try {
-            sessionStorage.setItem('selectedFlight', JSON.stringify(flight));
-            console.log('Flight data stored in sessionStorage');
+            sessionStorage.setItem('selectedFlight', JSON.stringify(bookingData));
+            console.log('Booking data (flight + passenger info) stored in sessionStorage:', bookingData);
         } catch (error) {
-            console.error('Error storing flight data:', error);
+            console.error('Error storing booking data:', error);
         }
         
         // Use window.location.href for immediate navigation

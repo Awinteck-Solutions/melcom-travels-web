@@ -15,6 +15,15 @@ import {
 import { IconPlane, IconChevronDown, IconShare, IconLuggage } from '@tabler/icons-react';
 import LuggageInfoModal from './LuggageInfoModal';
 import TarifConditionModal from './TarifConditionModal';
+import { 
+  AnimatedCard, 
+  AnimatedButton, 
+  StaggerContainer,
+  StaggerItem,
+  fadeInUp,
+  scaleIn,
+  fadeInRight
+} from '../../../../components/animations';
 
 export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => {
     const [showDetails, setShowDetails] = useState(false);
@@ -86,16 +95,24 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
     };
 
     return (
-        <Card className="w-full max-w-[835px]" radius="xl" shadow="sm" withBorder>
+        <AnimatedCard 
+            variant={fadeInRight} 
+            delay={0}
+            hoverX={true}
+            className="w-full max-w-[835px] rounded-xl shadow-sm p-2 border border-gray-100 bg-white" 
+            radius="xl" 
+            shadow="sm" 
+            withBorder
+        >
             <Stack gap="lg">
                 {/* Header with airline, class, and price */}
                 <Group justify="space-between" align="center">
                     <Group gap="sm">
                         <div className='w-10 h-10 rounded-full overflow-hidden'>
-                            <img src={flight.airlineLogo} alt={flight.airline} />
+                            <img src={flight.airlineLogo || '/emirates.svg'} alt={flight.airline || 'Airline'} />
                         </div>
                         <Text size="lg" fw={500} c="gray.6">
-                            {flight.airline}
+                            {flight.airline || 'Unknown Airline'}
                         </Text>
                     </Group>
 
@@ -120,7 +137,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                             {formatTime(flight.departure)}
                         </p>
                         <Badge variant="light" color="#364A9C" size="lg">
-                            {flight.fromCode}
+                            {flight.from || 'N/A'}
                         </Badge>
                     </Stack>
 
@@ -131,7 +148,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                             {formatTime(flight.arrival || flight.departure)}
                         </p>
                         <Badge variant="light" color="#364A9C" size="lg">
-                            {flight.toCode}
+                            {flight.to || 'N/A'}
                         </Badge>
                     </Stack>
                 </Group>
@@ -154,7 +171,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                         <Stack gap="xs" className='md:m-auto md:m-0'>
                             <p className='text-sm  text-gray-600'>Transfer</p>
                             <Badge variant="light" color="gray" size="lg">
-                                <p className='text-sm font-semibold capitalize text-gray-800'>{flight?.segments.length - 1}</p>
+                                <p className='text-sm font-semibold capitalize text-gray-800'>{flight?.segments?.length ? flight.segments.length - 1 : 0}</p>
                             </Badge>
                         </Stack>
                         {
@@ -285,7 +302,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                                 <Text size="sm" fw={500}>23kg included</Text>
                             </Group>
                         </Stack>
-                    </Card> */}
+                    </AnimatedCard> */}
                 </Collapse>
 
 
@@ -345,7 +362,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                 opened={tarifModalOpened}
                 onClose={() => setTarifModalOpened(false)}
             />
-        </Card>
+        </AnimatedCard>
     );
 };
 
@@ -418,16 +435,23 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
     };
 
     return (
-        <Card className="w-full max-w-[835px]" radius="xl" shadow="sm" withBorder>
+        <AnimatedCard 
+            variant={fadeInUp} 
+            delay={0}
+            className="w-full max-w-[835px]" 
+            radius="xl" 
+            shadow="sm" 
+            withBorder
+        >
             <Stack gap="lg">
                 {/* Header with airline, class, and price */}
                 <Group justify="space-between" align="center">
                     <Group gap="sm">
                         <div className='w-10 h-10 rounded-full overflow-hidden'>
-                            <img src={flight.airlineLogo} alt={flight.airline} />
+                            <img src={flight.airlineLogo || '/emirates.svg'} alt={flight.airline || 'Airline'} />
                         </div>
                         <Text size="lg" fw={500} c="gray.6">
-                            {flight.airline}
+                            {flight.airline || 'Unknown Airline'}
                         </Text>
                     </Group>
 
@@ -452,7 +476,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                             {formatTime(flight.departure)}
                         </p>
                         <Badge variant="light" color="#364A9C" size="lg">
-                            {flight.fromCode}
+                            {flight.fromCode || 'N/A'}
                         </Badge>
                     </Stack>
 
@@ -463,7 +487,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                             {formatTime(flight.arrival || flight.departure)}
                         </p>
                         <Badge variant="light" color="#364A9C" size="lg">
-                            {flight.toCode}
+                            {flight.toCode || 'N/A'}
                         </Badge>
                     </Stack>
                 </Group>
@@ -584,10 +608,10 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                 <Group justify="space-between" align="center">
                     <Group gap="sm">
                         <div className='w-10 h-10 rounded-full overflow-hidden'>
-                            <img src={flight.airlineLogo} alt={flight.airline} />
+                            <img src={flight.airlineLogo || '/emirates.svg'} alt={flight.airline || 'Airline'} />
                         </div>
                         <Text size="lg" fw={500} c="gray.6">
-                            {flight.airline}
+                            {flight.airline || 'Unknown Airline'}
                         </Text>
                     </Group>
 
@@ -603,7 +627,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                             {formatTime(flight.departure)}
                         </p>
                         <Badge variant="light" color="#364A9C" size="lg">
-                            {flight.fromCode}
+                            {flight.fromCode || 'N/A'}
                         </Badge>
                     </Stack>
 
@@ -614,7 +638,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                             {formatTime(flight.arrival || flight.departure)}
                         </p>
                         <Badge variant="light" color="#364A9C" size="lg">
-                            {flight.toCode}
+                            {flight.toCode || 'N/A'}
                         </Badge>
                     </Stack>
                 </Group>
@@ -805,7 +829,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
                 opened={tarifModalOpened}
                 onClose={() => setTarifModalOpened(false)}
             />
-        </Card>
+        </AnimatedCard>
     );
 };
 
@@ -863,7 +887,14 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
     };
 
     return (
-        <Card className="w-full max-w-[835px]" radius="xl" shadow="sm" withBorder>
+        <AnimatedCard 
+            variant={fadeInUp} 
+            delay={0}
+            className="w-full max-w-[835px]" 
+            radius="xl" 
+            shadow="sm" 
+            withBorder
+        >
             {flights.map((flight, index) => (
                 <div key={index}>
                     <Stack gap="lg" className='mb-6'>
@@ -872,10 +903,10 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                         <Group justify="space-between" align="center">
                             <Group gap="sm">
                                 <div className='w-10 h-10 rounded-full overflow-hidden'>
-                                    <img src={flight.airlineLogo} alt={flight.airline} />
+                                    <img src={flight.airlineLogo || '/emirates.svg'} alt={flight.airline || 'Airline'} />
                                 </div>
                                 <Text size="lg" fw={500} c="gray.6">
-                                    {flight.airline}
+                                    {flight.airline || 'Unknown Airline'}
                                 </Text>
                             </Group>
 
@@ -900,7 +931,7 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                                     {formatTime(flight.departure)}
                                 </p>
                                 <Badge variant="light" color="#364A9C" size="lg">
-                                    {flight.fromCode}
+                                    {flight.fromCode || 'N/A'}
                                 </Badge>
                             </Stack>
 
@@ -911,7 +942,7 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                                     {formatTime(flight.arrival || flight.departure)}
                                 </p>
                                 <Badge variant="light" color="#364A9C" size="lg">
-                                    {flight.toCode}
+                                    {flight.toCode || 'N/A'}
                                 </Badge>
                             </Stack>
                         </Group>
@@ -1092,7 +1123,7 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
                 opened={tarifModalOpened}
                 onClose={() => setTarifModalOpened(false)}
             />
-        </Card>
+        </AnimatedCard>
     );
 };
 

@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom'
 import { HomePage } from './Features/trial/home.pages'
 import FlightRoutes from './Features/Main/Flight/routes/Flight.routes'
 import HotelRoutes from './Features/Main/Hotel/routes/Hotel.routes'
@@ -7,6 +7,7 @@ import CarRoutes from './Features/Main/Car/routes/Car.routes'
 import ContactRoutes from './Features/Main/Contact/routes/Contact.routes'
 import BlogRoutes from './Features/Main/Blog/routes/Blog.routes'
 import FlightPage from './Features/Main/Flight/pages/Flight.pages'
+import PageTransition from './components/animations/PageTransition'
 
 // Import Auth components directly 
 import LoginPage from './Features/Auth/pages/Login.pages'
@@ -20,11 +21,13 @@ import ChangePasswordPage from './Features/Auth/pages/ChangePassword.pages'
 import UpdateProfilePage from './Features/Auth/pages/UpdateProfile.pages'
 import CheckoutPage from './Features/Auth/pages/Checkout.pages'
 
-function App() {
-
+// Component to handle page transitions
+function AnimatedRoutes() {
+  const location = useLocation();
+  
   return (
-    <Router>
-      <Routes>
+    <PageTransition location={location.pathname}>
+      <Routes location={location}>
         <Route path='/' element={<FlightPage />} />
         <Route path='/flights/*' element={<FlightRoutes />} />
         <Route path='/contact/*' element={<ContactRoutes />} />
@@ -44,6 +47,14 @@ function App() {
         <Route path='/faqs' element={<FAQsPage />} />
         <Route path='/checkout' element={<CheckoutPage key="checkout" />} />
       </Routes>
+    </PageTransition>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AnimatedRoutes />
     </Router>
   )
 }

@@ -6,6 +6,14 @@ import SearchResults from '../components/SearchResults';
 import FilterSidebar from '../components/FilterSidebar';
 import { Loader, Alert } from '@mantine/core';
 import { useState } from 'react';
+import { 
+  LoadingSpinner, 
+  FlightCardSkeleton, 
+  StaggerContainer,
+  StaggerItem,
+  AnimatedDiv,
+  fadeInUp
+} from '../../../../components/animations';
 
 const SearchPage = () => {
   const { isAuthenticated, user } = useGlobalContext();
@@ -19,9 +27,9 @@ const SearchPage = () => {
 
       <div className='relative'>
         <div className="absolute md:-top-20 -top-12 left-0 w-full h-full">
-          <img src="/earth.svg" alt="stars" className="md:w-1/2 w-4/5 m-auto object-cover" />
+          <img src="/earth.svg" alt="stars" className="lg:w-1/3 md:w-1/2 w-4/5 m-auto object-cover" />
           <div className='absolute top-10 w-full'>
-            <img src="/plane.svg" alt="plane" className="md:w-1/2 w-4/5 m-auto object-cover" />
+            <img src="/plane.svg" alt="plane" className="lg:w-1/3 md:w-1/2 w-4/5 m-auto object-cover" />
           </div>
         </div>
       </div>
@@ -43,7 +51,7 @@ const SearchPage = () => {
           <div className="flex-1">
             {loading && (
               <div className="flex flex-col items-center justify-center py-12">
-                <Loader size="lg" color="#364A9C" />
+                <LoadingSpinner size={60} color="#364A9C" />
                 <p className="mt-4 text-gray-600">Searching for flights...</p>
               </div>
             )}
@@ -55,7 +63,7 @@ const SearchPage = () => {
             )}
             {resultLoading && (
               <div className="flex flex-col items-center justify-center py-12">
-                <Loader size="lg" color="#364A9C" />
+                <LoadingSpinner size={60} color="#364A9C" />
                 <p className="mt-4 text-gray-600">Searching for flights...</p>
               </div>
             )}

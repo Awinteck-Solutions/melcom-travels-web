@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import { useSearchContext } from '../../../../context';
 import { Button, Card, Text, Group, Badge, Stack, Grid, Loader, Alert } from '@mantine/core';
 import { IconPlane, IconClock, IconUsers, IconMapPin, IconCalendar } from '@tabler/icons-react';
+import { 
+  LoadingSpinner, 
+  FlightCardSkeleton, 
+  StaggerContainer,
+  StaggerItem,
+  AnimatedDiv,
+  fadeInUp
+} from '../../../../components/animations';
 
 const FlightResults = () => {
     const { searchData, results, loading, error, setResults, setError } = useSearchContext();
@@ -125,7 +133,7 @@ const FlightResults = () => {
         return (
             <div className="flex justify-center items-center py-16">
                 <Stack align="center" spacing="md">
-                    <Loader size="lg" />
+                    <LoadingSpinner size={60} />
                     <Text size="lg" color="dimmed">Searching for flights...</Text>
                 </Stack>
             </div>

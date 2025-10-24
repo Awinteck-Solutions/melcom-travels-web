@@ -2,6 +2,16 @@ import { Link } from 'react-router-dom';
 import { Menu, Button, Text, Avatar } from '@mantine/core';
 import { useGlobalContext } from '../context';
 import { IconChevronRight } from '@tabler/icons-react';
+import { 
+  AnimatedDiv, 
+  AnimatedButton, 
+  StaggerContainer,
+  StaggerItem,
+  fadeInUp,
+  fadeInLeft,
+  fadeInRight,
+  scaleIn
+} from './animations';
 
 const Header = ({ currentPage }) => {
   const { isAuthenticated, user, logout } = useGlobalContext();
@@ -10,14 +20,14 @@ const Header = ({ currentPage }) => {
     <header className="bg-white px-6 py-4">
       <div className="max-w-7xll mx-auto flex items-start justify-between">
         {/* Logo Section */}
-        <div className="flex items-center space-x-1">
+        <AnimatedDiv variant={fadeInLeft} delay={0} className="flex items-center space-x-1">
           <Link to="/">
           <img className='h-20 w-20 md:h-36 md:w-36' src='/logo.svg' alt="MELCOM" />
           </Link>
-        </div>
+        </AnimatedDiv>
 
         {/* Navigation */}
-        <nav className="md:flex hidden items-center overflow-x-auto scrollbar-thin font-semiboldl lg:space-x-8 duration-300 transition-all">
+        <AnimatedDiv variant={fadeInUp} delay={0.2} className="md:flex hidden items-center overflow-x-auto scrollbar-thin font-semiboldl lg:space-x-8 duration-300 transition-all">
           {currentPage === 'flights' ? <Link to="/flights" className="flex items-center space-x-2 text-[#364A9C]  border border-[#364A9C] bg-blue-50/50 lg:px-4 md:px-2 py-2 rounded-xl">
             <span>Flights</span>
             <svg className='hidden lg:block' xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M3 21v-2h18v2zm1.75-5L1 9.75l2.4-.65l2.8 2.35l3.5-.925l-5.175-6.9l2.9-.775L14.9 9.125l4.25-1.15q.8-.225 1.513.187t.937 1.213t-.187 1.513t-1.213.937z" /></svg>
@@ -55,7 +65,7 @@ const Header = ({ currentPage }) => {
               <span className='px-3'>Contact us</span>
             </Link>
           }
-        </nav>
+        </AnimatedDiv>
 
         <div className="md:hidden px-2 hover:bg-gray-200 duration-200 text-[#364A9C] m-2 h-[20px]l rounded">
           <Menu offset={13} transitionProps={{ transition: 'rotate-right', duration: 150 }}
@@ -157,7 +167,7 @@ const Header = ({ currentPage }) => {
         </div>
 
         {/* Authentication Buttons */}
-        <div className="md:flex hidden items-center space-x-4">
+        <AnimatedDiv variant={fadeInRight} delay={0.4} className="md:flex hidden items-center space-x-4">
           {isAuthenticated ? (
             <div className="flex items-center space-x-3">
               <Link to="/profile" className="flex items-center space-x-2 text-gray-700 hover:text-[#364A9C] transition-colors">
@@ -201,7 +211,7 @@ const Header = ({ currentPage }) => {
               </Link>
             </>
           )}
-        </div>
+        </AnimatedDiv>
       </div>
     </header>
   );
