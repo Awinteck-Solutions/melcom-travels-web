@@ -177,6 +177,7 @@ const SearchResults = () => {
                 </Text>
             </div>
 
+
             {/* Search Results */}
             <div className="space-y-6">
                 {tripType === 'oneway' && flightData.map((flight, index) => (
