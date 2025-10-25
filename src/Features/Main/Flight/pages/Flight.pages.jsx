@@ -5,6 +5,7 @@ import { useGlobalContext } from '../../../../context';
 import Container from '../../../../components/Container';
 import FlightSearch from '../components/FlightSearch';
 import { FlightDeals, Blogs, CountryRecommendations } from '../components';
+import { useScrollToTop } from '../../../../hooks/useScrollToTop';
 import { 
   AnimatedDiv, 
   AnimatedButton, 
@@ -22,10 +23,17 @@ import {
   ScrollAnimation,
   StaggeredScrollAnimation
 } from '../../../../components/animations';
+import { useNavigate } from 'react-router-dom';
 
 const FlightPage = () => {
   const { isAuthenticated, user } = useGlobalContext();
   const [resultLoading, setResultLoading] = useState(false);
+  const navigate = useNavigate();
+  const moveToSearchPage = () => {
+    navigate('/flights/search');
+  }
+  // Auto scroll to top when page loads
+  useScrollToTop();
   
   // Memoize the welcome message to prevent unnecessary re-renders
   const welcomeMessage = useMemo(() => {
@@ -106,7 +114,10 @@ const FlightPage = () => {
       <div className='md:mt-[170px] mt-[110px]'>
         <div className='px-6'>
           <AnimatedDiv variant={fadeInUp} delay={1.2}>
+            <div
+            onClick={moveToSearchPage}>
             <FlightSearch setResultLoading={setResultLoading} isResultLoading={resultLoading} />
+            </div>
           </AnimatedDiv>
         </div>
 

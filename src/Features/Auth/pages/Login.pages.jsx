@@ -7,6 +7,7 @@ import Container from '../../../components/Container';
 import Header from '../../../components/Header';
 import ForgotPassword from '../components/ForgotPassword';
 import { loginUser, googleAuth } from '../services/auth.service';
+import { useScrollToTop } from '../../../hooks/useScrollToTop';
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +17,9 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const { login } = useGlobalContext();
+    
+    // Auto scroll to top when page loads
+    useScrollToTop();
 
     const validationSchema = Yup.object().shape({
         email: Yup.string()

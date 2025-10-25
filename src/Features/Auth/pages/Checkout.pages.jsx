@@ -11,6 +11,7 @@ import { DatePickerInput } from '@mantine/dates';
 import { OneWayFlightResultCard, ProgressStepper } from '../../Main/Flight/components';
 import { notifications } from '@mantine/notifications';
 import { createCheckout, transformPassengerData, transformFlightData } from '../services/checkout.service';
+import { useScrollToTop } from '../../../hooks/useScrollToTop';
 
 // Formik-based PassengerForm component
 const PassengerForm = React.memo(({ passengerKey, title, formik }) => (
@@ -232,6 +233,9 @@ const CheckoutPage = () => {
     const location = useLocation();
     const { user } = useGlobalContext();
     const { searchData } = useSearchContext();
+    
+    // Auto scroll to top when page loads
+    useScrollToTop();
     
     // Get passenger counts from search data or use defaults
     const getPassengerCounts = () => {
@@ -568,9 +572,13 @@ const CheckoutPage = () => {
                 position: 'top-right'
             });
             handleCloseIframe();
-            navigate('/booking-confirmation', { state: { checkoutData } });
-            // You can navigate to a success page or booking confirmation here
-            // navigate('/booking-confirmation', { state: { checkoutData } });
+            navigate('/booking-confirmation', { 
+                state: { 
+                    checkoutData,
+                    flightData: flight,
+                    passengerData: formik.values.passengers
+                } 
+            });
         };
 
         // Listen for postMessage events from the payment gateway

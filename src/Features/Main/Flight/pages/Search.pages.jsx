@@ -15,11 +15,15 @@ import {
   fadeInUp,
   ScrollAnimation
 } from '../../../../components/animations';
+import { useScrollToTop } from '../../../../hooks/useScrollToTop';
 
 const SearchPage = () => {
   const { isAuthenticated, user } = useGlobalContext();
   const { loading, error, results, searchData } = useSearchContext();
   const [resultLoading, setResultLoading] = useState(false);
+  
+  // Auto scroll to top when page loads
+  useScrollToTop();
 
   return (
     <Container>

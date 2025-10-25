@@ -20,7 +20,9 @@ import FAQsPage from './Features/Auth/pages/FAQs.pages'
 import ChangePasswordPage from './Features/Auth/pages/ChangePassword.pages'
 import UpdateProfilePage from './Features/Auth/pages/UpdateProfile.pages'
 import CheckoutPage from './Features/Auth/pages/Checkout.pages'
+import BookingConfirmationPage from './Features/Auth/pages/BookingConfirmation.pages'
 import { ScrollAnimationDemo } from './components/animations'
+import withScrollToTop from './components/withScrollToTop'
 
 // Component to handle page transitions
 function AnimatedRoutes() {
@@ -35,7 +37,7 @@ function AnimatedRoutes() {
       useEarthAnimation={useEarthAnimation}
     >
       <Routes location={location}>
-        <Route path='/' element={<FlightPage />} />
+        <Route path='/' element={withScrollToTop(FlightPage)()} />
         <Route path='/flights/*' element={<FlightRoutes />} />
         <Route path='/contact/*' element={<ContactRoutes />} />
         <Route path='/blogs/*' element={<BlogRoutes />} />
@@ -43,17 +45,18 @@ function AnimatedRoutes() {
         <Route path='/cars/*' element={<CarRoutes />} />
         
         {/* Auth Routes */} 
-        <Route path='/login' element={<LoginPage />} />
-        <Route path='/signup' element={<SignupPage />} />
-        <Route path='/profile' element={<ProfilePage />} />
-        <Route path='/bookings' element={<BookingsPage />} />
-        <Route path='/booking/:bookingId' element={<FlightPreviewPage />} />
-        <Route path='/notifications' element={<NotificationsPage />} />
-        <Route path='/update-profile' element={<UpdateProfilePage />} />
-        <Route path='/change-password' element={<ChangePasswordPage />} />
-        <Route path='/faqs' element={<FAQsPage />} />
-        <Route path='/checkout' element={<CheckoutPage key="checkout" />} />
-        <Route path='/scroll-demo' element={<ScrollAnimationDemo />} />
+        <Route path='/login' element={withScrollToTop(LoginPage)()} />
+        <Route path='/signup' element={withScrollToTop(SignupPage)()} />
+        <Route path='/profile' element={withScrollToTop(ProfilePage)()} />
+        <Route path='/bookings' element={withScrollToTop(BookingsPage)()} />
+        <Route path='/booking/:bookingId' element={withScrollToTop(FlightPreviewPage)()} />
+        <Route path='/notifications' element={withScrollToTop(NotificationsPage)()} />
+        <Route path='/update-profile' element={withScrollToTop(UpdateProfilePage)()} />
+        <Route path='/change-password' element={withScrollToTop(ChangePasswordPage)()} />
+        <Route path='/faqs' element={withScrollToTop(FAQsPage)()} />
+        <Route path='/checkout' element={withScrollToTop(CheckoutPage)()} />
+        <Route path='/booking-confirmation' element={withScrollToTop(BookingConfirmationPage)()} />
+        <Route path='/scroll-demo' element={withScrollToTop(ScrollAnimationDemo)()} />
       </Routes>
     </PageTransition>
   );
