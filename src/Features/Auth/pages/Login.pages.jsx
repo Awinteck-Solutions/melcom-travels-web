@@ -115,11 +115,11 @@ const LoginPage = () => {
             <Header currentPage="flights" />
             <div className='relative'>
                 <div className="absolute md:-top-20 -top-12 left-0 w-full h-full">
-                    <img src="/contact-dots.svg" alt="stars" className="md:w-1/2 w-4/5 m-auto object-cover" />
+                    <img src="/contact-dots.svg" alt="stars" className="lg:w-80 md:w-1/2 w-4/5 m-auto object-cover" />
                 </div>
             </div>
 
-            <div className="md:min-h-screen bg-white flex items-center justify-center">
+            <div className="md:min-h-screenl bg-white flex items-center justify-center">
                 <div className="w-full max-w-md">
                     {/* Login Card */}
                     <div className="md:px-8 px-4 mb-10">

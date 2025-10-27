@@ -10,17 +10,18 @@ import { useNavigate } from 'react-router-dom';
 import { updateDaysCount } from '../../../../utils/page.helper';
 import { searchAirports, searchFlights } from '../services/Flight.services';
 import { notifications } from '@mantine/notifications';
-import { 
-  AnimatedDiv, 
-  AnimatedButton, 
-  StaggerContainer,
-  StaggerItem,
-  fadeInUp,
-  fadeInLeft,
-  fadeInRight,
-  scaleIn,
-  LoadingButton
+import {
+    AnimatedDiv,
+    AnimatedButton,
+    StaggerContainer,
+    StaggerItem,
+    fadeInUp,
+    fadeInLeft,
+    fadeInRight,
+    scaleIn,
+    LoadingButton
 } from '../../../../components/animations';
+import { CustomSearch, CustomSearchResultsList } from './CustomSearch';
 
 const FlightSearch = ({ setResultLoading, isResultLoading }) => {
     const [dateValue, setDateValue] = useState(null);
@@ -188,15 +189,15 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
 
 
     return (
-        <AnimatedDiv 
-            variant={scaleIn} 
+        <AnimatedDiv
+            variant={scaleIn}
             delay={0}
             className="relative bg-white border-2 border-[#364A9C] rounded-2xl p-3 md:p-5 max-w-7xl mx-auto px-3 md:px-6"
         >
             <Tabs defaultValue="oneway" variant="pills" color="#364A9C">
                 <div className='flex flex-col lg:flex-row lg:items-start md:gap-4 lg:gap-0'>
                     <Tabs.List
-                        className="md:mb-4 lg:mb-6 rounded-md bg-gray-100 border w-full lg:w-fit p-2"
+                        className="md:mb-4 lg:mb-6 rounded-md bg-gray-50 border min-w-screen overflow-x-scroll lg:w-fit p-2"
                     >
                         <Tabs.Tab
                             value="oneway"
@@ -221,7 +222,7 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
                         </Tabs.Tab>
                     </Tabs.List>
 
-                    <div className="lg:ml-6 w-full lg:w-auto">
+                    <div className="lg:ml-6 w-full lg:w-auto md:block hidden">
                         <Select
                             placeholder="Select class"
                             data={[
@@ -300,7 +301,7 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
 export default FlightSearch;
 
 
-const OneWayFlightSearch = ({handleSearch, isResultLoading=false}) => {
+const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
 
     const { searchData } = useSearchContext();
     // console.log('searchData', searchData)
@@ -313,6 +314,7 @@ const OneWayFlightSearch = ({handleSearch, isResultLoading=false}) => {
     const [fromLocation, setFromLocation] = useState('ACC'); // Use uppercase to match API response
     const [toLocation, setToLocation] = useState('');
     const [selectedAirline, setSelectedAirline] = useState('');
+    const [flightClass, setFlightClass] = useState('economy');
 
     const handleOneWaySearch = () => {
         handleSearch('oneway', { fromLocation, toLocation, selectedAirline, dateValue, passengers, toleranceDays, onlyDirectFlight })
@@ -417,33 +419,25 @@ const OneWayFlightSearch = ({handleSearch, isResultLoading=false}) => {
 
     }, []);
 
+    const [customSearchData, setCustomSearchData] = useState([]);
+    const [showFrom, setShowFrom] = useState(false);
+
     return (
         <div>
             <div className="text-center">
                 <div className='border-2 md:mt-0 mt-1 border-[#E7E7E7] w-full rounded-2xl flex flex-col lg:flex-row'>
 
-                    <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
-                        <SearchSelect
-                            apiAirports={apiAirportsfrom}
-                            isLoading={isLoading.from}
-                            label="From"
-                            value={fromLocation}
-                            onChange={setFromLocation}
-                            onSearchChange={handleFromSearchChange} />
-                        <div className='rounded-full h-fit p-2 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
+                    <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 pb-6 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
+                        <CustomSearch label="From" selectedAirport={(val) => setFromLocation(val?.code)} />
+                        <div className='rounded-full h-fit p-1 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
                         </div>
                     </div>
 
-                    <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 py-10 md:py-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
-                        <SearchSelect
-                            apiAirports={apiAirportsto}
-                            isLoading={isLoading.to}
-                            label="To"
-                            value={toLocation}
-                            onChange={setToLocation}
-                            onSearchChange={handleToSearchChange} />
+                    <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 md:py-4 pt-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
+                        <CustomSearch label="To" selectedAirport={(val) => setToLocation(val?.code)} />
                     </div>
+
                     <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
                         <DatePicker
                             type="oneway"
@@ -466,7 +460,7 @@ const OneWayFlightSearch = ({handleSearch, isResultLoading=false}) => {
                 <div className="flex flex-col lg:flex-row justify-between mt-4 lg:mt-2 gap-4 lg:gap-0">
                     <div className='flex flex-col lg:flex-row md:items-start items-center lg:items-center md:justify-start lg:justify-around space-y-3 lg:space-y-0 lg:space-x-2'>
                         <Select
-                            placeholder="Select airline"
+                            placeholder="All Airlines"
                             data={[
                                 { value: 'Airline', label: 'Airline' },
                                 { value: 'Emirates', label: 'Emirates' },
@@ -490,6 +484,34 @@ const OneWayFlightSearch = ({handleSearch, isResultLoading=false}) => {
                                 }
                             }}
                         />
+
+<div className="lg:ml-6 w-full lg:w-auto block md:hidden">
+                        <Select
+                            placeholder="Select class"
+                            data={[
+                                { value: 'economy', label: 'Economy' },
+                                { value: 'business', label: 'Business' },
+                                { value: 'first-class', label: 'First Class' }
+                            ]}
+                            value={flightClass}
+                            onChange={setFlightClass}
+                            className="w-full lg:w-fit mt-1 font-bold"
+                            styles={{
+                                input: {
+                                    width: '100%',
+                                    height: '50px',
+                                    textAlign: 'center',
+                                    borderColor: '#E7E7E7',
+                                    borderWidth: '2px',
+                                    '&:focus': {
+                                        borderColor: '#364A9C',
+                                        boxShadow: '0 0 0 1px #364A9C'
+                                    }
+                                }
+                            }}
+                        />
+                        </div>
+                        
                         <div className='flex items-center space-x-2 md:w-full w-fit lg:w-auto'>
                             <p className="font-medium text-center text-sm lg:text-base">Tolerance Days</p>
                             <div className="flex items-center space-x-2 rounded-full p-1">
@@ -678,8 +700,8 @@ const RoundTripFlightSearch = ({ fromLocation, setFromLocation, toLocation, setT
                         </label>
                     </div>
 
-                    <AnimatedButton 
-                        className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8' 
+                    <AnimatedButton
+                        className='w-full lg:w-auto p-3 md:p-2 bg-gradient-to-r from-[#243167] to-[#364A9C] hover:from-[#364A9C] hover:to-[#243167] text-white rounded-lg font-semibold text-base md:text-lg px-6 md:px-8'
                         onClick={() => handleSearch('roundtrip', { fromLocation, toLocation, dateValue, returnDateValue, passengers })}
                         delay={0.2}
                     >

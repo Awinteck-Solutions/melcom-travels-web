@@ -29,7 +29,8 @@ const DatePicker = ({
     ];
 
     // Days of the week
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     // Get days in month
     const getDaysInMonth = (year, month) => {
@@ -194,20 +195,20 @@ const DatePicker = ({
             {type === "roundtrip" ? <div
                  onClick={() => !disabled && setIsOpen(!isOpen)}
                 className='text-left cursor-pointer'>
-                <div className='flex items-end gap-2'>
-                    <span className='text-[25px] font-bold p-0'>{formatSelectedDate().day}</span>
-                    <span className='text-base p-0'>{formatSelectedDate().month}</span>
+                <div className='flex justify-center items-end md:gap-2'>
+                    <span className='lg:text-2xl text-base font-bold p-0'>{formatSelectedDate().day}</span>
+                    <span className='lg:text-base text-sm p-0'>{formatSelectedDate().month}</span>
                 </div>
-                <p className='font-medium'>{formatSelectedDate().dayName}, {formatSelectedDate().year}</p>
+                <p className='md:text-left md:ml-4 md:mt-1 mt-0 text-center lg:text-base text-sm font-medium'>{formatSelectedDate().dayName}, {formatSelectedDate().year}</p>
             </div> :
                 <div
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                     className='text-left cursor-pointer'>
-                    <div className='flex items-end gap-2'>
-                        <span className='text-[35px] font-bold h-[40px] p-0'>{formatSelectedDate().day}</span>
-                        <span className='text-lg h-[21px] p-0'>{formatSelectedDate().month}, {formatSelectedDate().year}</span>
+                    <div className='flex justify-center items-end md:gap-2'>
+                        <span className='lg:text-[35px] text-[25px] font-bold h-[40px] p-0'>{formatSelectedDate().day}</span>
+                        <span className='lg:text-lg text-base h-[21px] p-0'>{formatSelectedDate().month}, {formatSelectedDate().year}</span>
                     </div>
-                    <p className='font-medium'>{formatSelectedDate().dayName}</p>
+                    <p className='md:text-left md:ml-4 md:mt-1 mt-0 text-center lg:text-base text-sm font-medium'>{formatSelectedDate().dayName}</p>
                 </div>
             }
 
@@ -248,7 +249,7 @@ const DatePicker = ({
 
                     {/* Days of Week */}
                     <div className="grid grid-cols-7 gap-1 mb-2">
-                        {dayNames.map(day => (
+                        {dayNamesShort.map(day => (
                             <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
                                 {day}
                             </div>
