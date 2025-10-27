@@ -130,7 +130,7 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
             "tripType": searchType,
             "directFlightsOnly": searchData.onlyDirectFlight,
             "currency": "GHS",
-            airline: selectedAirline,
+            airline: searchData.selectedAirline || selectedAirline,
             toleranceDays: searchData.toleranceDays,
         };
 
@@ -150,12 +150,12 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
                 // Store flight results in context
                 setResults(response.data);
                 console.log('Flight search results:', response.data);
-                notifications.show({
-                    title: 'Flight search results',
-                    message: 'Flight search results',
-                    color: 'green',
-                    position: 'top-right',
-                });
+                // notifications.show({
+                //     title: 'Flight search results',
+                //     message: 'Flight search results',
+                //     color: 'green',
+                //     position: 'top-right',
+                // });
                 // Navigate to search results page
                 if (window.location.pathname !== '/flights/search') {
                     setTimeout(() => {
@@ -163,18 +163,11 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
                         // window.location.href = '/flights/search';
                     }, 100);
                 }
-            } else {
-                notifications.show({
-                    title: 'Flight search error',
-                    message: response.message || 'Failed to search flights',
-                    color: 'red',
-                    position: 'top-right',
-                });
             }
         } catch (error) {
             notifications.show({
                 title: 'Flight search error',
-                message: error.message || 'Failed to search flights',
+                message: error.message || 'Please try again',
                 color: 'red',
                 position: 'top-right',
             });
@@ -192,12 +185,12 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
         <AnimatedDiv
             variant={scaleIn}
             delay={0}
-            className="relative bg-white border-2 border-[#364A9C] rounded-2xl p-3 md:p-5 max-w-7xl mx-auto px-3 md:px-6"
+            className="relative bg-white border-2 border-[#364A9C] rounded-2xl p-1 md:p-5 max-w-7xl mx-auto px-1 md:px-6"
         >
             <Tabs defaultValue="oneway" variant="pills" color="#364A9C">
                 <div className='flex flex-col lg:flex-row lg:items-start md:gap-4 lg:gap-0'>
                     <Tabs.List
-                        className="md:mb-4 lg:mb-6 rounded-md bg-gray-50 border min-w-screen overflow-x-scroll lg:w-fit p-2"
+                        className="md:mb-4 lg:mb-6 rounded-xl bg-gray-50 border min-w-screen overflow-x-scroll lg:w-fit p-2"
                     >
                         <Tabs.Tab
                             value="oneway"
@@ -425,7 +418,7 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
     return (
         <div>
             <div className="text-center">
-                <div className='border-2 md:mt-0 mt-1 border-[#E7E7E7] w-full rounded-2xl flex flex-col lg:flex-row'>
+                <div className='md:border-2 border md:mt-0 mt-1 border-[#E7E7E7] w-full rounded-2xl flex flex-col lg:flex-row'>
 
                     <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 pb-6 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
                         <CustomSearch label="From" selectedAirport={(val) => setFromLocation(val?.code)} />
@@ -457,8 +450,8 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
 
                 </div>
 
-                <div className="flex flex-col lg:flex-row justify-between mt-4 lg:mt-2 gap-4 lg:gap-0">
-                    <div className='flex flex-col lg:flex-row md:items-start items-center lg:items-center md:justify-start lg:justify-around space-y-3 lg:space-y-0 lg:space-x-2'>
+                <div className="flex flex-col lg:flex-row justify-between mt-1 lg:mt-2 gap-4 lg:gap-0">
+                    <div className='flex flex-col lg:flex-row md:items-start items-center lg:items-center md:justify-start lg:justify-around space-y-1 lg:space-y-0 lg:space-x-2'>
                         <Select
                             placeholder="All Airlines"
                             data={[
@@ -485,33 +478,33 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                             }}
                         />
 
-<div className="lg:ml-6 w-full lg:w-auto block md:hidden">
-                        <Select
-                            placeholder="Select class"
-                            data={[
-                                { value: 'economy', label: 'Economy' },
-                                { value: 'business', label: 'Business' },
-                                { value: 'first-class', label: 'First Class' }
-                            ]}
-                            value={flightClass}
-                            onChange={setFlightClass}
-                            className="w-full lg:w-fit mt-1 font-bold"
-                            styles={{
-                                input: {
-                                    width: '100%',
-                                    height: '50px',
-                                    textAlign: 'center',
-                                    borderColor: '#E7E7E7',
-                                    borderWidth: '2px',
-                                    '&:focus': {
-                                        borderColor: '#364A9C',
-                                        boxShadow: '0 0 0 1px #364A9C'
+                        <div className="lg:ml-6 w-full lg:w-auto block md:hidden">
+                            <Select
+                                placeholder="Select class"
+                                data={[
+                                    { value: 'economy', label: 'Economy' },
+                                    { value: 'business', label: 'Business' },
+                                    { value: 'first-class', label: 'First Class' }
+                                ]}
+                                value={flightClass}
+                                onChange={setFlightClass}
+                                className="w-full lg:w-fit mt-1 font-bold"
+                                styles={{
+                                    input: {
+                                        width: '100%',
+                                        height: '50px',
+                                        textAlign: 'center',
+                                        borderColor: '#E7E7E7',
+                                        borderWidth: '2px',
+                                        '&:focus': {
+                                            borderColor: '#364A9C',
+                                            boxShadow: '0 0 0 1px #364A9C'
+                                        }
                                     }
-                                }
-                            }}
-                        />
+                                }}
+                            />
                         </div>
-                        
+
                         <div className='flex items-center space-x-2 md:w-full w-fit lg:w-auto'>
                             <p className="font-medium text-center text-sm lg:text-base">Tolerance Days</p>
                             <div className="flex items-center space-x-2 rounded-full p-1">

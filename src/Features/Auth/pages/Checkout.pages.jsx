@@ -643,12 +643,12 @@ const CheckoutPage = () => {
 
                     {/* Footer */}
                     <div className="p-6 border-t bg-gray-50">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between flex-wrap gap-3">
                             <div className="text-sm text-gray-600">
                                 <p>Status: <span className="font-medium text-blue-600">{checkoutData.status}</span></p>
                                 <p>Secure payment powered by Hubtel</p>
                             </div>
-                            <div className="flex space-x-3">
+                            <div className="flex flew-wrap space-x-3">
                                 <button
                                     onClick={handleCloseIframe}
                                     className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -735,13 +735,13 @@ const CheckoutPage = () => {
                 <Header currentPage="flights" />
 
                 <div className='relative'>
-                    <div className="absolute md:-top-20 -top-12 left-0 w-full h-full">
+                    <div className="absolute md:-top-20 -top-12 left-0 w-full h-full z-[0]">
                         <img src="/contact-dots.svg" alt="stars" className="lg:hidden md:w-1/2 w-4/5 m-auto object-cover" />
                     </div>
                 </div>
 
-                <div className="md:min-h-screen py-8">
-                    <div className="max-w-7xl mx-auto px-6">
+                <div className="md:min-h-screen md:py-8 py-1">
+                    <div className="max-w-7xl mx-auto md:px-6 px-1">
                         {/* Back Button */}
                         <button
                             onClick={() => navigate(-1)}
@@ -758,12 +758,12 @@ const CheckoutPage = () => {
                             <ProgressStepper currentStep={3} />
                         </div>
 
-                        <form onSubmit={formik.handleSubmit}>
-                            <div className="flex flex-wrap gap-8">
+                        <form onSubmit={formik.handleSubmit} className='z-10 relative'>
+                            <div className="flex flex-wrap gap-">
                                 {/* Left Column - Flight Details and Forms */}
                                 <div className="flex-1">
 
-                                    <div className='mb-4 border rounded-[35px] bg-[#364A9C]'>
+                                    <div className='mb-4 md:border md:rounded-[35px] md:bg-[#364A9C]'>
                                         <OneWayFlightResultCard
                                             key={flight.id || 'default'}
                                             flight={flight}
@@ -777,7 +777,7 @@ const CheckoutPage = () => {
                                 </div>
 
                                 {/* Right Column - Cart Summary */}
-                                <div className="w-80">
+                                <div className="md:w-80 w-full">
                                     <CartSummary />
                                 </div>
                             </div>

@@ -42,7 +42,7 @@ const SearchPage = () => {
       <div className='md:mt-[170px] mt-[110px]'>
         {/* Flight Search Form */}
         <ScrollAnimation animation="fadeUp">
-          <div className="mb-8 px-6">
+          <div className="mb-8 md:px-6 px-1">
             <FlightSearch setResultLoading={setResultLoading} isResultLoading={resultLoading} />
           </div>
         </ScrollAnimation>

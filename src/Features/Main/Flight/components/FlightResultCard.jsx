@@ -116,45 +116,45 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                         </Text>
                     </Group>
 
-                    <Badge
+                    {/* <Badge
                         variant="light"
                         color="#364A9C"
                         size="lg"
                         rightSection={<IconChevronDown size={12} />}
                     >
                         Economy Lite
-                    </Badge>
+                    </Badge> */}
 
-                    <p className='text-3xl font-bold text-gray-800'>
+                    <p className='lg:text-3xl text-2xl font-bold text-gray-800'>
                         GH₵{flight.price?.toLocaleString() || '10,000'}
                     </p>
                 </Group>
 
                 {/* Flight route */}
-                <Group justify="space-between" align="center">
-                    <Stack gap="xs" align="center" className='m-auto md:m-0'>
-                        <p className='text-xl font-bold text-gray-800'>
+                <Group className='md:mt-0 mt-[-20px]' justify="space-between" align="center">
+                    <Stack gap="xs" align="center" className='m-auto md:m-0 mb-[-11px]'>
+                        <p className='lg:text-xl text-base font-bold text-gray-800'>
                             {formatTime(flight.departure)}
                         </p>
-                        <Badge variant="light" color="#364A9C" size="lg">
+                        <Badge className='lg:text-lg text-sm' variant="light" color="#364A9C" >
                             {flight.from || 'N/A'}
                         </Badge>
                     </Stack>
 
                     <FlightRoute />
 
-                    <Stack gap="xs" align="center" className='m-auto md:m-0'>
-                        <p className='text-xl font-bold text-gray-800'>
+                    <Stack gap="xs" align="center" className='m-auto md:m-0 mt-[-13px]'>
+                        <p className='lg:text-xl text-base font-bold text-gray-800'>
                             {formatTime(flight.arrival || flight.departure)}
                         </p>
-                        <Badge variant="light" color="#364A9C" size="lg">
+                        <Badge className='lg:text-lg text-sm' variant="light" color="#364A9C" >
                             {flight.to || 'N/A'}
                         </Badge>
                     </Stack>
                 </Group>
 
                 {/* Flight details and booking */}
-                <Group justify="space-between" align="center">
+                <Group justify="space-between" align="center" className='md:mt-0 mt-[-10px]'>
                     <Group gap="lg">
                         <Stack gap="xs" className='md:m-auto md:m-0 '>
                             <p className='text-sm text-gray-600'>Departure</p>
@@ -187,7 +187,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                     </Group>
 
                     {onBookNow &&
-                        <div className='md:w-fit w-full'>
+                        <div className='md:w-fit w-full md:mt-0 mt-[-7px]'>
                             <Button
                                 color="#364A9C"
                                 size="md"
@@ -203,7 +203,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 
                 {/* View Details button */}
                 <div>
-                    <div className='md:w-fit w-full'>
+                    <div className='md:w-fit w-full md:mt-0 mt-[-14px]'>
                         <Button
                             variant="outline"
                             color="#364A9C"
@@ -228,7 +228,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 
                     {flight?.segments?.map((segment, index) => (
                          <Timeline key={index} active={4} lineWidth={2} bulletSize={20} color="#364A9C">
-                            <div className='border-l-2 border-[#364A9C] h-20 m-0'>
+                            <div className='border-l-2 border-[#364A9C] h-20 m-0 md:mt-0'>
                                 {/* show bg-[#FEEDDB] if index is odd */}
                                 <div className={`w-full p-3 ${index % 2 === 0 ? 'bg-[#FEEDDB]' : 'bg-[#E5FBE8]'} flex gap-2 items-center`}> 
                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
@@ -308,7 +308,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 
                 <Divider />
                 {/* Bottom action bar */}
-                <Group justify="space-between" align="center">
+                <Group justify="space-between" align="center" className='md:mt-0 mt-[-16px] md:space-y-0 lspace-y-[-15px]'>
                     <Group gap="sm">
                         <ActionIcon
                             variant="subtle"

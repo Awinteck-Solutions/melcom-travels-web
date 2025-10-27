@@ -101,8 +101,8 @@ const BookingConfirmationPage = () => {
                     </div>
                 </div>
 
-                <div className="py-8">
-                    <div className="max-w-4xl mx-auto px-6">
+                <div className="md:py-8 py-1">
+                    <div className="max-w-4xl mx-auto md:px-6 px-1">
                         {/* Success Header */}
                         <div className="text-center mb-8">
                             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
