@@ -177,7 +177,7 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
                     <span>Multi-city</span>
                 </button>
                 </div>
-                <div>
+                <div className='md:block hidden'>
                     <Select
                         placeholder="Select class"
                         data={[

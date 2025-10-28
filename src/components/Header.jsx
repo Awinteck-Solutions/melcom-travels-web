@@ -26,13 +26,13 @@ const Header = ({ currentPage }) => {
           </Link>
         </AnimatedDiv>
 
-        <div onClick={() => navigate('/#/checkout')} className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
+        {/* <div onClick={() => navigate('/#/checkout')} className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
           <span>Checkout</span>
         </div>
 
         <Link to="/#/checkout" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
           <span>Checkout O</span>
-        </Link>
+        </Link> */}
 
         {/* Navigation */}
         <AnimatedDiv variant={fadeInUp} delay={0.2} className="md:flex hidden items-center overflow-x-auto scrollbar-thin font-semiboldl lg:space-x-8 duration-300 transition-all">
