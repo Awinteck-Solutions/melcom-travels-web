@@ -112,7 +112,7 @@ const FlightPage = () => {
       </div>
       
       <div className='md:mt-[170px] mt-[110px]'>
-        <div className='px-6'>
+        <div className='md:px-6 px-1'>
           <AnimatedDiv variant={fadeInUp} delay={1.2}>
             <div
             onClick={moveToSearchPage}>

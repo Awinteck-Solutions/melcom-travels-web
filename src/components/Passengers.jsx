@@ -95,7 +95,7 @@ const Passengers = ({
             {/* Input Field */}
             <div
                 className={`
-          w-[200px] h-[60px]l rounded-lg 
+          md:w-[200px] w-full h-[60px]l rounded-lg 
           flex items-center justify-center cursor-pointer
           ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-[#364A9C]'}
           ${isOpen ? 'border-[#364A9C]' : ''}
@@ -134,7 +134,7 @@ const Passengers = ({
 
             {/* Passenger Picker Popup */}
             {isOpen && (
-                <div className="absolute top-full md:-right-8 -right-14 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50 min-w-64 md:w-[380px] w-[300px]">
+                <div className="absolute top-full md:-right-8 -right-9 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50 min-w-64 md:w-[380px] w-[300px]">
                     <div className="space-y-4">
                         {passengerTypes.map((type) => (
                             <div key={type.key} className="flex items-center justify-between">

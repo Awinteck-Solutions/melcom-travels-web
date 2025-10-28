@@ -284,7 +284,7 @@ const BlogPostPage = () => {
       <div className=''>
         {/* Loading State */}
         {isLoading && (
-          <div className="max-w-4xl mx-auto px-6 py-12">
+          <div className="max-w-4xl mx-auto md:px-6 px-1 py-12">
             <div className="text-center">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -300,10 +300,10 @@ const BlogPostPage = () => {
         {/* Blog Post Content */}
         {!isLoading && (
           <>
-          <article className="max-w-4xl mx-auto px-6">
+          <article className="max-w-4xl mx-auto md:px-6 px-1">
           {/* Article Header */}
-          <header className="md:mb-8">
-            <h1 className="md:text-3xl text-lg font-bold text-gray-900 mb-3 leading-tight">
+          <header className="md:mb-8 ">
+            <h1 className="md:text-3xl text-lg font-bold text-gray-900 mb-3 mt-5 md:text-left text-center leading-tight">
               {currentPost.title}
             </h1>
 
@@ -386,8 +386,8 @@ const BlogPostPage = () => {
         </article>
 
         {/* Related Articles */}
-        <section className="mt-16 py-12">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="md:mt-16 mt-0 py-12">
+          <div className="max-w-7xl mx-auto md:px-6 px-1">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Related Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2">
               {similarPosts
@@ -397,9 +397,8 @@ const BlogPostPage = () => {
             </div>
           </div>
         </section>
-          </>
-        )}
-
+      </>
+      )} 
       </div>
     </Container>
   );

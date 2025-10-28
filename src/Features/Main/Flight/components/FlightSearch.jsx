@@ -431,78 +431,85 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                         <CustomSearch label="To" selectedAirport={(val) => setToLocation(val?.code)} />
                     </div>
 
-                    <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
-                        <DatePicker
-                            type="oneway"
-                            title="Departure"
-                            placeholder="Select Date"
-                            disabled={false}
-                            value={dateValue}
-                            onChange={(value) => setDateValue(new Date(value))}
-                        />
-                    </div>
-                    <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l border-[#E7E7E7]'>
-                        <Passengers
-                            value={passengers}
-                            onChange={setPassengers}
-                        />
+                    <div className='grid grid-cols-2 gap-0'>
+
+                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-b-0 lg:border-l border-r border-[#E7E7E7]'>
+                            <DatePicker
+                                type="oneway"
+                                title="Departure"
+                                placeholder="Select Date"
+                                disabled={false}
+                                value={dateValue}
+                                onChange={(value) => setDateValue(new Date(value))}
+                            />
+                        </div>
+                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l border-[#E7E7E7]'>
+                            <Passengers
+                                value={passengers}
+                                onChange={setPassengers}
+                            />
+                        </div>
                     </div>
 
                 </div>
 
                 <div className="flex flex-col lg:flex-row justify-between mt-1 lg:mt-2 gap-4 lg:gap-0">
                     <div className='flex flex-col lg:flex-row md:items-start items-center lg:items-center md:justify-start lg:justify-around space-y-1 lg:space-y-0 lg:space-x-2'>
-                        <Select
-                            placeholder="All Airlines"
-                            data={[
-                                { value: 'Airline', label: 'Airline' },
-                                { value: 'Emirates', label: 'Emirates' },
-                                { value: 'British Airways', label: 'British Airways' },
-                                { value: 'Lufthansa', label: 'Lufthansa' },
-                            ]}
-                            value={selectedAirline}
-                            onChange={setSelectedAirline}
-                            className="w-full lg:w-fit mt-1 font-bold"
-                            styles={{
-                                input: {
-                                    width: '100%',
-                                    height: '50px',
-                                    textAlign: 'center',
-                                    borderColor: '#E7E7E7',
-                                    borderWidth: '2px',
-                                    '&:focus': {
-                                        borderColor: '#364A9C',
-                                        boxShadow: '0 0 0 1px #364A9C'
-                                    }
-                                }
-                            }}
-                        />
-
-                        <div className="lg:ml-6 w-full lg:w-auto block md:hidden">
-                            <Select
-                                placeholder="Select class"
-                                data={[
-                                    { value: 'economy', label: 'Economy' },
-                                    { value: 'business', label: 'Business' },
-                                    { value: 'first-class', label: 'First Class' }
-                                ]}
-                                value={flightClass}
-                                onChange={setFlightClass}
-                                className="w-full lg:w-fit mt-1 font-bold"
-                                styles={{
-                                    input: {
-                                        width: '100%',
-                                        height: '50px',
-                                        textAlign: 'center',
-                                        borderColor: '#E7E7E7',
-                                        borderWidth: '2px',
-                                        '&:focus': {
-                                            borderColor: '#364A9C',
-                                            boxShadow: '0 0 0 1px #364A9C'
+                        <div className='grid grid-cols-2 md:grid-cols-1 gap-2'>
+                            <div className='col-span-1'>
+                                <Select
+                                    placeholder="All Airlines"
+                                    data={[
+                                        { value: 'Airline', label: 'Airline' },
+                                        { value: 'Emirates', label: 'Emirates' },
+                                        { value: 'British Airways', label: 'British Airways' },
+                                        { value: 'Lufthansa', label: 'Lufthansa' },
+                                    ]}
+                                    value={selectedAirline}
+                                    onChange={setSelectedAirline}
+                                    className="w-full lg:w-fit mt-1 font-bold"
+                                    styles={{
+                                        input: {
+                                            width: '100%',
+                                            height: '50px',
+                                            textAlign: 'center',
+                                            borderColor: '#E7E7E7',
+                                            borderWidth: '2px',
+                                            '&:focus': {
+                                                borderColor: '#364A9C',
+                                                boxShadow: '0 0 0 1px #364A9C'
+                                            }
                                         }
-                                    }
-                                }}
-                            />
+                                    }}
+                                />
+                            </div>
+
+                            <div className="col-span-1 lg:ml-6 w-full lg:w-auto block md:hidden">
+                                <Select
+                                    placeholder="Select class"
+                                    data={[
+                                        { value: 'economy', label: 'Economy' },
+                                        { value: 'business', label: 'Business' },
+                                        { value: 'first-class', label: 'First Class' }
+                                    ]}
+                                    value={flightClass}
+                                    onChange={setFlightClass}
+                                    className="w-full lg:w-fit mt-1 font-bold"
+                                    styles={{
+                                        input: {
+                                            width: '100%',
+                                            height: '50px',
+                                            textAlign: 'center',
+                                            borderColor: '#E7E7E7',
+                                            borderWidth: '2px',
+                                            '&:focus': {
+                                                borderColor: '#364A9C',
+                                                boxShadow: '0 0 0 1px #364A9C'
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         <div className='flex items-center space-x-2 md:w-full w-fit lg:w-auto'>

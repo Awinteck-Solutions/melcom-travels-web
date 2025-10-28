@@ -21,7 +21,7 @@ const CountryRecommendations = () => {
                 }
             `}</style>
             
-            <div className="md:px-10 px-5 md:py-14 py-5 md:grid grid-cols-12 justify-center items-center gap-5 space-y-1 md:space-y-0">
+            <div className="md:px-10 px-1 md:py-14 py-5 md:grid grid-cols-12 justify-center items-center gap-5 space-y-1 md:space-y-0">
             <div className="md:col-span-5 justify-center items-start gap-4">
                 <div className="text-center lg:text-left">
                     <div className="text-zinc-400 text-base font-normal leading-snug">DISCOVER</div>

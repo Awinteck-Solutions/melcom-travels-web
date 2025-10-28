@@ -4,7 +4,7 @@ const FlightDeals = () => {
   const [activeFilter, setActiveFilter] = useState('trending');
 
   const filters = [
-    'trending', '5-Star', 'Asian', 'Europe', 'Middle-East', 'Budget-Friendly', 'Adventure', 'Family-Friendly'
+    'Trending', '5-Star', 'Asian', 'Europe', 'Middle-East', 'Budget-Friendly', 'Adventure', 'Family-Friendly'
   ];
 
   const flightDeals = [
@@ -64,7 +64,7 @@ const FlightDeals = () => {
       `}</style>
       
       <section className="py-16">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto md:px-6 px-1">
         {/* Section Header */}
         <div className="text-center md:mb-12 mb-4">
           <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">DISCOVER</p>

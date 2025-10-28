@@ -112,7 +112,7 @@ const BlogPage = () => {
             <div className=''>
                 {/* Blog Section */}
                 <section className="mb-4">
-                    <div className="max-w-7xl mx-auto px-6 py-10">
+                    <div className="max-w-7xl mx-auto md:px-6 px-1 py-10">
                         {/* Section Header */}
                         <ScrollAnimation animation="fadeUp">
                             <div className="text-center md:mb-12 mb-8">
