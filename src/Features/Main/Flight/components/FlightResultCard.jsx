@@ -24,6 +24,7 @@ import {
   scaleIn,
   fadeInRight
 } from '../../../../components/animations';
+import { div } from 'framer-motion/client';
 
 export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => {
     const [showDetails, setShowDetails] = useState(false);
@@ -48,7 +49,8 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 
     // Flight route visualization
     const FlightRoute = () => (
-        <div className="flex justify-start items-center m-auto md:m-0">
+        <div className='md:w-fit m-auto '>
+             <div className="flex justify-start items-center m-auto md:m-0 ">
             <div className="w-2.5 h-2.5 p-0.5 bg-indigo-800 rounded-xl shadow-[0px_0px_7.99px_0.74px_rgba(118,149,255,0.62)]"></div>
             <div className="flex justify-start items-center gap-7">
                 <div className="w-14 h-0 border-t-[1.48px] border-dashed border-neutral-200"></div>
@@ -59,6 +61,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
             </div>
             <div className="w-2.5 h-2.5 p-0.5 bg-indigo-800 rounded-xl shadow-[0px_0px_7.99px_0.74px_rgba(118,149,255,0.62)]"></div>
         </div>
+       </div>
     );
 
     // Format time for display
@@ -95,14 +98,15 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
     };
 
     return (
-        <AnimatedCard 
-            variant={fadeInRight} 
-            delay={0}
-            hoverX={true}
-            className="w-full max-w-[835px] rounded-xl shadow-sm p-2 border border-gray-100 bg-white" 
-            radius="xl" 
-            shadow="sm" 
-        >
+        // <AnimatedCard 
+        //     variant={fadeInRight}
+        //     delay={0}
+        //     hoverX={true}
+        //     className="w-full max-w-[835px] rounded-xl shadow-sm p-2 border border-gray-100 bg-white"
+        //     radius="xl"
+        //     shadow="sm"
+        // >
+        <div className='w-full max-w-[835px] rounded-xl shadow-sm p-2 border border-gray-100 bg-white'>
             <Stack gap="lg">
                 {/* Header with airline, class, and price */}
                 <Group justify="space-between" align="center">
@@ -125,7 +129,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                     </Badge> */}
 
                     <p className='lg:text-3xl text-2xl font-bold text-gray-800'>
-                        GH₵{flight.price?.toLocaleString() || '10,000'}
+                        GH₵{flight.price?.toLocaleString() || 'n/a'}
                     </p>
                 </Group>
 
@@ -349,8 +353,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                     </Group>
                 </Group>
             </Stack>
-
-            {/* Luggage Info Modal */}
+ 
             <LuggageInfoModal
                 opened={luggageModalOpened}
                 onClose={() => setLuggageModalOpened(false)}
@@ -361,7 +364,8 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                 opened={tarifModalOpened}
                 onClose={() => setTarifModalOpened(false)}
             />
-        </AnimatedCard>
+            {/* </AnimatedCard> */}
+        </div>
     );
 };
 

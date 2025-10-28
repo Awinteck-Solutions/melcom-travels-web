@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Menu, Button, Text, Avatar } from '@mantine/core';
 import { useGlobalContext } from '../context';
 import { IconChevronRight } from '@tabler/icons-react';
@@ -15,7 +15,7 @@ import {
 
 const Header = ({ currentPage }) => {
   const { isAuthenticated, user, logout } = useGlobalContext();
-
+  const navigate = useNavigate();
   return (
     <header className="bg-white px-6 py-4">
       <div className="max-w-7xll mx-auto flex items-start justify-between">
@@ -25,6 +25,14 @@ const Header = ({ currentPage }) => {
           <img className='h-20 w-20 md:h-36 md:w-36' src='/logo.svg' alt="MELCOM" />
           </Link>
         </AnimatedDiv>
+
+        <div onClick={() => navigate('/#/checkout')} className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
+          <span>Checkout</span>
+        </div>
+
+        <Link to="/#/checkout" className="flex items-center space-x-2 text-[#364A9C]  border border-white lg:px-4 py-2 rounded-xl">
+          <span>Checkout O</span>
+        </Link>
 
         {/* Navigation */}
         <AnimatedDiv variant={fadeInUp} delay={0.2} className="md:flex hidden items-center overflow-x-auto scrollbar-thin font-semiboldl lg:space-x-8 duration-300 transition-all">

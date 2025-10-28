@@ -759,7 +759,7 @@ const CheckoutPage = () => {
                         </div>
 
                         <form onSubmit={formik.handleSubmit} className='z-10 relative'>
-                            <div className="flex flex-wrap gap-">
+                            <div className="flex flex-wrap gap-4">
                                 {/* Left Column - Flight Details and Forms */}
                                 <div className="flex-1">
 

@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
     Checkbox, 
     Slider, 
-    SegmentedControl, 
     RangeSlider, 
     Card, 
     Text, 
@@ -17,12 +16,24 @@ import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useSearchContext } from '../../../../context';
 
 const FilterSidebar = () => {
-    const { setFilters } = useSearchContext();
+    const { setFilters, results } = useSearchContext();
     
+    // Extract price range from results
+    const priceRangeData = useMemo(() => {
+        if (!results?.results?.flights || results.results.flights.length === 0) {
+            return { min: 100, max: 1200 };
+        }
+
+        const prices = results.results.flights.map(flight => parseFloat(flight.price.total));
+        const minPrice = Math.floor(Math.min(...prices));
+        const maxPrice = Math.ceil(Math.max(...prices));
+        
+        return { min: minPrice, max: maxPrice };
+    }, [results?.results?.flights]);
+
     // State for all filters
     const [selectedClass, setSelectedClass] = useState('economy');
-    const [priceRange, setPriceRange] = useState([100, 1200]);
-    const [wayToggle, setWayToggle] = useState('way-there');
+    const [priceRange, setPriceRange] = useState([priceRangeData.min, priceRangeData.max]);
     const [departureTime, setDepartureTime] = useState([0, 24]);
     const [arrivalTime, setArrivalTime] = useState([0, 24]);
     const [transitionTime, setTransitionTime] = useState([0, 24]);
@@ -37,24 +48,66 @@ const FilterSidebar = () => {
     const [airlinesExpanded, setAirlinesExpanded] = useState(true);
     const [stopsExpanded, setStopsExpanded] = useState(true);
 
-    // Airlines data
-    const airlines = [
-        'Emirate Airline',
-        'RwandaAir',
-        'EgyptAir',
-        'Kenya Airways',
-        'Qatar Airways',
-        'Air Force',
-        'Royal Air Maroc',
-        'Turkish Airways'
-    ];
+    // Extract unique airlines from results
+    const airlines = useMemo(() => {
+        if (!results?.results?.flights) {
+            return [
+                'Emirate Airline',
+                'RwandaAir',
+                'EgyptAir',
+                'Kenya Airways',
+                'Qatar Airways',
+                'Air Force',
+                'Royal Air Maroc',
+                'Turkish Airways'
+            ];
+        }
 
-    // Stops data
-    const stops = [
-        { label: 'Direct flight (0)', value: 'direct', count: 0 },
-        { label: '1 Stop', value: '1-stop', count: 0 },
-        { label: '1+ Stops', value: '1-plus-stops', count: 0 }
-    ];
+        const uniqueAirlines = new Set();
+        results.results.flights.forEach(flight => {
+            flight.segments.forEach(segment => {
+                if (segment.airline && segment.airline.name) {
+                    uniqueAirlines.add(segment.airline.name);
+                }
+            });
+        });
+
+        return Array.from(uniqueAirlines).sort();
+    }, [results?.results?.flights]);
+
+    // Extract stops data from results
+    const stops = useMemo(() => {
+        if (!results?.results?.flights) {
+            return [
+                { label: 'Direct flight (0)', value: 'direct', count: 0 },
+                { label: '1 Stop', value: '1-stop', count: 0 },
+                { label: '1+ Stops', value: '1-plus-stops', count: 0 }
+            ];
+        }
+
+        const stopCounts = {
+            direct: 0,
+            '1-stop': 0,
+            '1-plus-stops': 0
+        };
+
+        results.results.flights.forEach(flight => {
+            const flightStops = flight.segments.length - 1;
+            if (flightStops === 0) {
+                stopCounts.direct++;
+            } else if (flightStops === 1) {
+                stopCounts['1-stop']++;
+            } else if (flightStops > 1) {
+                stopCounts['1-plus-stops']++;
+            }
+        });
+
+        return [
+            { label: `Direct flight (${stopCounts.direct})`, value: 'direct', count: stopCounts.direct },
+            { label: `1 Stop (${stopCounts['1-stop']})`, value: '1-stop', count: stopCounts['1-stop'] },
+            { label: `1+ Stops (${stopCounts['1-plus-stops']})`, value: '1-plus-stops', count: stopCounts['1-plus-stops'] }
+        ];
+    }, [results?.results?.flights]);
 
     // Handle airline selection
     const handleAirlineChange = (airline, checked) => {
@@ -74,12 +127,16 @@ const FilterSidebar = () => {
         }
     };
 
+    // Update price range when data changes
+    useEffect(() => {
+        setPriceRange([priceRangeData.min, priceRangeData.max]);
+    }, [priceRangeData]);
+
     // Update filters in context whenever any filter changes
     useEffect(() => {
         const currentFilters = {
             selectedClass,
             priceRange,
-            wayToggle,
             departureTime,
             arrivalTime,
             transitionTime,
@@ -91,7 +148,6 @@ const FilterSidebar = () => {
     }, [
         selectedClass, 
         priceRange, 
-        wayToggle, 
         departureTime, 
         arrivalTime, 
         transitionTime, 
@@ -108,9 +164,35 @@ const FilterSidebar = () => {
         return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     };
 
+    // Clear all filters
+    const clearAllFilters = () => {
+        setSelectedClass('economy');
+        setPriceRange([priceRangeData.min, priceRangeData.max]);
+        setDepartureTime([0, 24]);
+        setArrivalTime([0, 24]);
+        setTransitionTime([0, 24]);
+        setJourneyTime([0, 24]);
+        setSelectedAirlines([]);
+        setSelectedStops([]);
+    };
+
     return (
         <Card className="w-96" radius="lg" shadow="sm" withBorder>
             <Stack gap="lg">
+                {/* Clear Filters Button */}
+                <Group justify="space-between" mb="md">
+                    <Text fw={600} size="lg" c="#364A9C">
+                        Filters
+                    </Text>
+                    <Button
+                        variant="outline"
+                        size="xs"
+                        color="gray"
+                        onClick={clearAllFilters}
+                    >
+                        Clear All
+                    </Button>
+                </Group>
                 {/* Class Selection */}
                 <div>
                     <Group justify="space-between" mb="md">
@@ -174,13 +256,13 @@ const FilterSidebar = () => {
                             <RangeSlider
                                 value={priceRange}
                                 onChange={setPriceRange}
-                                min={100}
-                                max={1200}
-                                step={50}
+                                min={priceRangeData.min}
+                                max={priceRangeData.max}
+                                step={Math.max(1, Math.floor((priceRangeData.max - priceRangeData.min) / 20))}
                                 marks={[
-                                    { value: 100, label: '₵100' },
-                                    { value: 600, label: '₵600' },
-                                    { value: 1200, label: '₵1200' }
+                                    { value: priceRangeData.min, label: `₵${priceRangeData.min}` },
+                                    { value: Math.floor((priceRangeData.min + priceRangeData.max) / 2), label: `₵${Math.floor((priceRangeData.min + priceRangeData.max) / 2)}` },
+                                    { value: priceRangeData.max, label: `₵${priceRangeData.max}` }
                                 ]}
                                 color="#364A9C"
                                 size="xs"
@@ -200,11 +282,11 @@ const FilterSidebar = () => {
                     </Collapse>
                 </div>
 
-                {/* Way Back / Way There Toggle */}
+                {/* Time Filters */}
                 <div>
                     <Group justify="space-between" mb="md">
                         <Text fw={600} size="md" c="#364A9C">
-                            Flight Direction
+                            Time Filters
                         </Text>
                         <ActionIcon
                             variant="subtle"
@@ -216,148 +298,126 @@ const FilterSidebar = () => {
                     </Group>
                     
                     <Collapse in={timeExpanded}>
-                        <Stack gap="md">
-                            <SegmentedControl
-                                value={wayToggle}
-                                onChange={setWayToggle}
-                                data={[
-                                    { label: 'Way there', value: 'way-there' },
-                                    { label: 'Way back', value: 'way-back' }
-                                ]}
-                                size="sm"
-                                color="#364A9C"
-                                styles={{
-                                    control: {
-                                        '&[dataActive]': {
+                        <Stack gap="lg">
+                            {/* Departure Time */}
+                            <div>
+                                <Group justify="space-between" mb="xs">
+                                    <Text size="sm" c="gray.6">Departure Time:</Text>
+                                    <Text size="sm" c="gray.6">
+                                        {formatTime(departureTime[0])} - {formatTime(departureTime[1])}
+                                    </Text>
+                                </Group>
+                                <RangeSlider
+                                    value={departureTime}
+                                    onChange={setDepartureTime}
+                                    min={0}
+                                    max={24}
+                                    step={0.5}
+                                    color="#364A9C"
+                                    size="xs"
+                                    styles={{
+                                        thumb: {
                                             background: 'linear-gradient(to right, #243167, #364A9C)',
-                                            color: 'white'
+                                            border: 'none'
+                                        },
+                                        track: {
+                                            '&[dataFilled]': {
+                                                background: 'linear-gradient(to right, #243167, #364A9C)'
+                                            }
                                         }
-                                    }
-                                }}
-                            />
+                                    }}
+                                />
+                            </div>
 
-                            {/* Time Filters */}
-                            <Stack gap="lg">
-                                {/* Departure Time */}
-                                <div>
-                                    <Group justify="space-between" mb="xs">
-                                        <Text size="sm" c="gray.6">Departure Time:</Text>
-                                        <Text size="sm" c="gray.6">
-                                            {formatTime(departureTime[0])} - {formatTime(departureTime[1])}
-                                        </Text>
-                                    </Group>
-                                    <RangeSlider
-                                        value={departureTime}
-                                        onChange={setDepartureTime}
-                                        min={0}
-                                        max={24}
-                                        step={0.5}
-                                        color="#364A9C"
-                                        size="xs"
-                                        styles={{
-                                            thumb: {
-                                                background: 'linear-gradient(to right, #243167, #364A9C)',
-                                                border: 'none'
-                                            },
-                                            track: {
-                                                '&[dataFilled]': {
-                                                    background: 'linear-gradient(to right, #243167, #364A9C)'
-                                                }
+                            {/* Time Of Arrival */}
+                            <div>
+                                <Group justify="space-between" mb="xs">
+                                    <Text size="sm" c="gray.6">Time Of Arrival</Text>
+                                    <Text size="sm" c="gray.6">
+                                        {formatTime(arrivalTime[0])} - {formatTime(arrivalTime[1])}
+                                    </Text>
+                                </Group>
+                                <RangeSlider
+                                    value={arrivalTime}
+                                    onChange={setArrivalTime}
+                                    min={0}
+                                    max={24}
+                                    step={0.5}
+                                    color="#364A9C"
+                                    size="xs"
+                                    styles={{
+                                        thumb: {
+                                            background: 'linear-gradient(to right, #243167, #364A9C)',
+                                            border: 'none'
+                                        },
+                                        track: {
+                                            '&[dataFilled]': {
+                                                background: 'linear-gradient(to right, #243167, #364A9C)'
                                             }
-                                        }}
-                                    />
-                                </div>
+                                        }
+                                    }}
+                                />
+                            </div>
 
-                                {/* Time Of Arrival */}
-                                <div>
-                                    <Group justify="space-between" mb="xs">
-                                        <Text size="sm" c="gray.6">Time Of Arrival</Text>
-                                        <Text size="sm" c="gray.6">
-                                            {formatTime(arrivalTime[0])} - {formatTime(arrivalTime[1])}
-                                        </Text>
-                                    </Group>
-                                    <RangeSlider
-                                        value={arrivalTime}
-                                        onChange={setArrivalTime}
-                                        min={0}
-                                        max={24}
-                                        step={0.5}
-                                        color="#364A9C"
-                                        size="xs"
-                                        styles={{
-                                            thumb: {
-                                                background: 'linear-gradient(to right, #243167, #364A9C)',
-                                                border: 'none'
-                                            },
-                                            track: {
-                                                '&[dataFilled]': {
-                                                    background: 'linear-gradient(to right, #243167, #364A9C)'
-                                                }
+                            {/* Transition Time */}
+                            <div>
+                                <Group justify="space-between" mb="xs">
+                                    <Text size="sm" c="gray.6">Transition Time</Text>
+                                    <Text size="sm" c="gray.6">
+                                        {formatTime(transitionTime[0])} - {formatTime(transitionTime[1])}
+                                    </Text>
+                                </Group>
+                                <RangeSlider
+                                    value={transitionTime}
+                                    onChange={setTransitionTime}
+                                    min={0}
+                                    max={24}
+                                    step={0.5}
+                                    color="#364A9C"
+                                    size="xs"
+                                    styles={{
+                                        thumb: {
+                                            background: 'linear-gradient(to right, #243167, #364A9C)',
+                                            border: 'none'
+                                        },
+                                        track: {
+                                            '&[dataFilled]': {
+                                                background: 'linear-gradient(to right, #243167, #364A9C)'
                                             }
-                                        }}
-                                    />
-                                </div>
+                                        }
+                                    }}
+                                />
+                            </div>
 
-                                {/* Transition Time */}
-                                <div>
-                                    <Group justify="space-between" mb="xs">
-                                        <Text size="sm" c="gray.6">Transition Time</Text>
-                                        <Text size="sm" c="gray.6">
-                                            {formatTime(transitionTime[0])} - {formatTime(transitionTime[1])}
-                                        </Text>
-                                    </Group>
-                                    <RangeSlider
-                                        value={transitionTime}
-                                        onChange={setTransitionTime}
-                                        min={0}
-                                        max={24}
-                                        step={0.5}
-                                        color="#364A9C"
-                                        size="xs"
-                                        styles={{
-                                            thumb: {
-                                                background: 'linear-gradient(to right, #243167, #364A9C)',
-                                                border: 'none'
-                                            },
-                                            track: {
-                                                '&[dataFilled]': {
-                                                    background: 'linear-gradient(to right, #243167, #364A9C)'
-                                                }
+                            {/* Journey Time */}
+                            <div>
+                                <Group justify="space-between" mb="xs">
+                                    <Text size="sm" c="gray.6">Journey Time</Text>
+                                    <Text size="sm" c="gray.6">
+                                        {formatTime(journeyTime[0])} - {formatTime(journeyTime[1])}
+                                    </Text>
+                                </Group>
+                                <RangeSlider
+                                    value={journeyTime}
+                                    onChange={setJourneyTime}
+                                    min={0}
+                                    max={24}
+                                    step={0.5}
+                                    color="#364A9C"
+                                    size="xs"
+                                    styles={{
+                                        thumb: {
+                                            background: 'linear-gradient(to right, #243167, #364A9C)',
+                                            border: 'none'
+                                        },
+                                        track: {
+                                            '&[dataFilled]': {
+                                                background: 'linear-gradient(to right, #243167, #364A9C)'
                                             }
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Journey Time */}
-                                <div>
-                                    <Group justify="space-between" mb="xs">
-                                        <Text size="sm" c="gray.6">Journey Time</Text>
-                                        <Text size="sm" c="gray.6">
-                                            {formatTime(journeyTime[0])} - {formatTime(journeyTime[1])}
-                                        </Text>
-                                    </Group>
-                                    <RangeSlider
-                                        value={journeyTime}
-                                        onChange={setJourneyTime}
-                                        min={0}
-                                        max={24}
-                                        step={0.5}
-                                        color="#364A9C"
-                                        size="xs"
-                                        styles={{
-                                            thumb: {
-                                                background: 'linear-gradient(to right, #243167, #364A9C)',
-                                                border: 'none'
-                                            },
-                                            track: {
-                                                '&[dataFilled]': {
-                                                    background: 'linear-gradient(to right, #243167, #364A9C)'
-                                                }
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            </Stack>
+                                        }
+                                    }}
+                                />
+                            </div>
                         </Stack>
                     </Collapse>
                 </div>
@@ -426,9 +486,6 @@ const FilterSidebar = () => {
                                             {stop.label}
                                         </Text>
                                     </Group>
-                                    <Badge variant="light" color="gray" size="sm">
-                                        ₵25,000
-                                    </Badge>
                                 </Group>
                             ))}
                         </Stack>

@@ -104,13 +104,13 @@ const transformFlightData = (apiFlight, index, tripType = 'oneway') => {
 const SearchResults = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const navigate = useNavigate();
-    const { results, searchData } = useSearchContext();
+    const { results, searchData, filters } = useSearchContext();
 
     // Determine trip type from search data
     const tripType = searchData?.tripType || 'oneway';
 
     // Transform API results using DTO or fallback to mock data
-    const flightData = useMemo(() => {
+    const rawFlightData = useMemo(() => {
         if (results?.results?.flights) {
             console.log('Transforming API flight data:', results.results.flights);
             return results.results.flights.map((apiFlight, index) => 
@@ -120,6 +120,100 @@ const SearchResults = () => {
         // Fallback to mock data
         return [];
     }, [results?.results?.flights, tripType]);
+
+    // Filtering function
+    const applyFilters = (flights, filterOptions) => {
+        if (!filterOptions) return flights;
+
+        return flights.filter(flight => {
+            // Price filter
+            if (filterOptions.priceRange) {
+                const [minPrice, maxPrice] = filterOptions.priceRange;
+                if (flight.price < minPrice || flight.price > maxPrice) {
+                    return false;
+                }
+            }
+
+            // Class filter
+            if (filterOptions.selectedClass) {
+                const flightClass = flight.class?.toLowerCase().replace(/\s+/g, '-');
+                if (flightClass !== filterOptions.selectedClass) {
+                    return false;
+                }
+            }
+
+            // Airlines filter
+            if (filterOptions.selectedAirlines && filterOptions.selectedAirlines.length > 0) {
+                const flightAirline = flight.airline || flight.firstAirline;
+                if (!filterOptions.selectedAirlines.some(airline => 
+                    flightAirline.toLowerCase().includes(airline.toLowerCase())
+                )) {
+                    return false;
+                }
+            }
+
+            // Stops filter
+            if (filterOptions.selectedStops && filterOptions.selectedStops.length > 0) {
+                const flightStops = flight.stops;
+                let stopMatch = false;
+                
+                for (const stopFilter of filterOptions.selectedStops) {
+                    if (stopFilter === 'direct' && flightStops === 0) {
+                        stopMatch = true;
+                        break;
+                    } else if (stopFilter === '1-stop' && flightStops === 1) {
+                        stopMatch = true;
+                        break;
+                    } else if (stopFilter === '1-plus-stops' && flightStops > 1) {
+                        stopMatch = true;
+                        break;
+                    }
+                }
+                
+                if (!stopMatch) {
+                    return false;
+                }
+            }
+
+            // Departure time filter
+            if (filterOptions.departureTime) {
+                const [minHour, maxHour] = filterOptions.departureTime;
+                const departureHour = flight.departure.getHours() + (flight.departure.getMinutes() / 60);
+                
+                if (departureHour < minHour || departureHour > maxHour) {
+                    return false;
+                }
+            }
+
+            // Arrival time filter
+            if (filterOptions.arrivalTime) {
+                const [minHour, maxHour] = filterOptions.arrivalTime;
+                const arrivalHour = flight.arrival.getHours() + (flight.arrival.getMinutes() / 60);
+                
+                if (arrivalHour < minHour || arrivalHour > maxHour) {
+                    return false;
+                }
+            }
+
+            // Journey time filter (total flight duration)
+            if (filterOptions.journeyTime) {
+                const [minHour, maxHour] = filterOptions.journeyTime;
+                const durationParts = flight.duration.split(' ');
+                const totalHours = parseInt(durationParts[0]) + (parseInt(durationParts[1]) / 60);
+                
+                if (totalHours < minHour || totalHours > maxHour) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    };
+
+    // Apply filters to flight data
+    const flightData = useMemo(() => {
+        return applyFilters(rawFlightData, filters);
+    }, [rawFlightData, filters]);
 
 
     // Handle booking a flight
@@ -132,7 +226,7 @@ const SearchResults = () => {
         // Show alert to confirm click is working
         // alert('Book Now clicked! Navigating to checkout...');
         
-        // Create booking data object with both flight and passenger information
+        // // Create booking data object with both flight and passenger information
         const bookingData = {
             flight: flight,
             passengerInfo: {
@@ -144,7 +238,7 @@ const SearchResults = () => {
             searchData: searchData // Store the complete search data for reference
         };
         
-        // Store booking data in sessionStorage
+        // // Store booking data in sessionStorage
         try {
             sessionStorage.setItem('selectedFlight', JSON.stringify(bookingData));
             console.log('Booking data (flight + passenger info) stored in sessionStorage:', bookingData);
@@ -152,9 +246,9 @@ const SearchResults = () => {
             console.error('Error storing booking data:', error);
         }
         
-        // Use window.location.href for immediate navigation
+        // // Use window.location.href for immediate navigation
         console.log('Using window.location.href for navigation');
-        window.location.href = '/checkout';
+        window.location.href = '/#/checkout';
     };
 
     // Handle viewing flight details
@@ -172,8 +266,16 @@ const SearchResults = () => {
             {/* Results Summary */}
             <div className="my-4 p-4 bg-gray-100 rounded-lg">
                 <Text size="sm" color="dimmed">
-                    Showing {flightData.length} flights
+                    {filters ? 
+                        `Showing ${flightData.length} of ${rawFlightData.length} flights` : 
+                        `Showing ${flightData.length} flights`
+                    }
                 </Text>
+                {filters && flightData.length === 0 && rawFlightData.length > 0 && (
+                    <Text size="sm" color="red" mt="xs">
+                        No flights match your current filters. Try adjusting your search criteria.
+                    </Text>
+                )}
             </div>
 
 

@@ -23,6 +23,7 @@ import CheckoutPage from './Features/Auth/pages/Checkout.pages'
 import BookingConfirmationPage from './Features/Auth/pages/BookingConfirmation.pages'
 import { ScrollAnimationDemo } from './components/animations'
 import withScrollToTop from './components/withScrollToTop'
+import { CheckPage } from './Features/Auth/pages/Check.pages'
 
 // Component to handle page transitions
 function AnimatedRoutes() {
@@ -55,6 +56,7 @@ function AnimatedRoutes() {
         <Route path='/change-password' element={withScrollToTop(ChangePasswordPage)()} />
         <Route path='/faqs' element={withScrollToTop(FAQsPage)()} />
         <Route path='/checkout' element={withScrollToTop(CheckoutPage)()} />
+        {/* <Route path='/checkout' element={withScrollToTop(CheckPage)()} /> */}
         <Route path='/booking-confirmation' element={withScrollToTop(BookingConfirmationPage)()} />
         <Route path='/scroll-demo' element={withScrollToTop(ScrollAnimationDemo)()} />
       </Routes>
