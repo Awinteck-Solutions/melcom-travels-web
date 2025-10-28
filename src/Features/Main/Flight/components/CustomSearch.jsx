@@ -4,7 +4,7 @@ import { IconChevronDown, IconFlagSearch, IconSearch } from "@tabler/icons-react
 import { LoadingSpinner } from "../../../../components/animations";
 import { div } from "framer-motion/client";
 
-export const CustomSearch = ({ label, selectedAirport }) => {
+export const CustomSearch = ({ value, label, selectedAirport }) => {
     const [input, setInput] = useState('');
     const [data, setData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +22,12 @@ export const CustomSearch = ({ label, selectedAirport }) => {
     const [show, setShow] = useState(false);
     const dropdownRef = useRef(null);
     const inputRef = useRef(null);
+
+    useEffect(() => {
+        if (value && value.code) {
+            setSelectedItem(value);
+        }
+    }, [value]);
       // Handle click outside to close dropdown
       useEffect(() => {
           const handleClickOutside = (event) => {

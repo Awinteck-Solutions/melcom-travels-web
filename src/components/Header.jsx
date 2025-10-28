@@ -86,7 +86,7 @@ const Header = ({ currentPage }) => {
               </Menu.Item>
               <Menu.Item style={{ borderTop: '1px solid lightgray', borderRadius: '0px' }} p={0} my={2}>
                 <Link to={'/blogs'} className={currentPage == 'blogs' ? "bg-gray-200 flex items-center gap-1 text-base text-[#364A9C] rounded p-3 px-3" : " flex text-[#364A9C] items-center gap-3 text-base  p-3 px-3 rounded cursor-pointer"}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M3 21v-2h18v2zm1.75-5L1 9.75l2.4-.65l2.8 2.35l3.5-.925l-5.175-6.9l2.9-.775L14.9 9.125l4.25-1.15q.8-.225 1.513.187t.937 1.213t-.187 1.513t-1.213.937z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path d="M3 4v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8h-4" /><path d="M3 4h14v14a2 2 0 0 0 2 2v0M13 8H7m6 4H9" /></g></svg>
                   <span> Blogs </span>
                 </Link>
               </Menu.Item>

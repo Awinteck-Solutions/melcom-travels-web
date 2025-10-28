@@ -112,10 +112,10 @@ const BlogPage = () => {
             <div className=''>
                 {/* Blog Section */}
                 <section className="mb-4">
-                    <div className="max-w-7xl mx-auto md:px-6 px-1 py-10">
+                    <div className="max-w-7xl mx-auto md:px-6 px-1">
                         {/* Section Header */}
                         <ScrollAnimation animation="fadeUp">
-                            <div className="text-center md:mb-12 mb-8">
+                            <div className="text-center md:mb-4 mb-8">
                                 <p className="text-sm text-gray-500 uppercase tracking-wide mb-2">DISCOVER</p>
                                 <h1 className="md:text-4xl text-2xl font-bold text-gray-900 mb-4">Travel Blog & Guides</h1>
                                 <p className="md:text-lg text-base text-gray-600 max-w-3xl mx-auto">
@@ -131,7 +131,7 @@ const BlogPage = () => {
                             <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none md:hidden"></div>
                             
                             <div 
-                                className="flex items-center md:justify-center justify-start space-x-2 mb-12 overflow-x-auto pb-4 scrollbar-hide" 
+                                className="flex items-center md:justify-center justify-start space-x-2 mb-12l overflow-x-auto pb-4 scrollbar-hide" 
                                 style={{ 
                                     scrollbarWidth: 'none', 
                                     msOverflowStyle: 'none',

@@ -102,7 +102,6 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
             className="w-full max-w-[835px] rounded-xl shadow-sm p-2 border border-gray-100 bg-white" 
             radius="xl" 
             shadow="sm" 
-            withBorder
         >
             <Stack gap="lg">
                 {/* Header with airline, class, and price */}
@@ -441,7 +440,6 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
             className="w-full max-w-[835px]" 
             radius="xl" 
             shadow="sm" 
-            withBorder
         >
             <Stack gap="lg">
                 {/* Header with airline, class, and price */}
@@ -893,7 +891,7 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
             className="w-full max-w-[835px]" 
             radius="xl" 
             shadow="sm" 
-            withBorder
+            
         >
             {flights.map((flight, index) => (
                 <div key={index}>

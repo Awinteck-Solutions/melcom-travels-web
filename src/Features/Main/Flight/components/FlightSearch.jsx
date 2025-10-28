@@ -24,109 +24,82 @@ import {
 import { CustomSearch, CustomSearchResultsList } from './CustomSearch';
 
 const FlightSearch = ({ setResultLoading, isResultLoading }) => {
-    const [dateValue, setDateValue] = useState(null);
-    const [passengers, setPassengers] = useState({ adult: 1, children: 0, infant: 0 });
-    const [toleranceDays, setToleranceDays] = useState(1);
-    const [onlyDirectFlight, setOnlyDirectFlight] = useState(false);
-    const [fromLocation, setFromLocation] = useState('');
-    const [toLocation, setToLocation] = useState('');
-    const [returnDateValue, setReturnDateValue] = useState(null);
+    const [searchType, setSearchType] = useState('oneway');
     const [selectedAirline, setSelectedAirline] = useState('Emirates');
-    const [flightClass, setFlightClass] = useState('economy');
-    const [multiCityItems, setMultiCityItems] = useState([
-        {
-            id: 1,
-            fromLocation: '',
-            toLocation: '',
-            dateValue: null,
-            passengers: { adult: 1, children: 0, infant: 0 }
-        }
-    ]);
-
-    // PERSONAL CODE
-    const [OneWayFlightSearchData, setOneWayFlightSearchData] = useState({})
+    const [selectedFlightClass, setSelectedFlightClass] = useState('economy');
 
     const { setSearchData, setLoading, setResults, formData, setFormData } = useSearchContext();
     const navigate = useNavigate();
-    const isLoadingFromContext = useRef(false);
-    const previousFormData = useRef(null);
-    const loadedFormDataRef = useRef(null);
+
 
     // Initialize form state from persisted data or defaults
-    useEffect(() => {
-        if (formData && JSON.stringify(formData) !== JSON.stringify(loadedFormDataRef.current)) {
+    // useEffect(() => {
+    //     if (formData && JSON.stringify(formData) !== JSON.stringify(loadedFormDataRef.current)) {
 
-            // Mark this form data as loaded to prevent re-loading
-            loadedFormDataRef.current = formData;
-            isLoadingFromContext.current = true;
+    //         // Mark this form data as loaded to prevent re-loading
+    //         loadedFormDataRef.current = formData;
+    //         isLoadingFromContext.current = true;
 
-            setFromLocation(formData.fromLocation || '');
-            setToLocation(formData.toLocation || '');
-            setDateValue(formData.dateValue || null);
-            setReturnDateValue(formData.returnDateValue || null);
-            setPassengers(formData.passengers || { adult: 1, children: 0, infant: 0 });
-            setToleranceDays(formData.toleranceDays || 1);
-            setOnlyDirectFlight(formData.onlyDirectFlight || false);
-            setSelectedAirline(formData.selectedAirline || 'Emirates');
-            setFlightClass(formData.flightClass || 'economy');
-            if (formData.multiCityItems) {
-                setMultiCityItems(formData.multiCityItems);
-            }
+    //         setFromLocation(formData.fromLocation || '');
+    //         setToLocation(formData.toLocation || '');
+    //         setDateValue(formData.dateValue || null);
+    //         setReturnDateValue(formData.returnDateValue || null);
+    //         setPassengers(formData.passengers || { adult: 1, children: 0, infant: 0 });
+    //         setToleranceDays(formData.toleranceDays || 1);
+    //         setOnlyDirectFlight(formData.onlyDirectFlight || false);
+    //         setSelectedAirline(formData.selectedAirline || 'Emirates');
+    //         setFlightClass(formData.flightClass || 'economy');
+    //         if (formData.multiCityItems) {
+    //             setMultiCityItems(formData.multiCityItems);
+    //         }
 
-            // Set the previous form data to prevent unnecessary saves
-            previousFormData.current = formData;
+    //         // Set the previous form data to prevent unnecessary saves
+    //         previousFormData.current = formData;
 
-            // Reset the flag after a short delay to allow state updates to complete
-            setTimeout(() => {
-                isLoadingFromContext.current = false;
-            }, 200);
-        }
-    }, [formData]);
+    //         // Reset the flag after a short delay to allow state updates to complete
+    //         setTimeout(() => {
+    //             isLoadingFromContext.current = false;
+    //         }, 200);
+    //     }
+    // }, [formData]);
 
     // Save form data to context whenever it changes (but not when loading from context)
-    useEffect(() => {
-        // Only save if we're not currently loading from persisted data
-        if (!isLoadingFromContext.current) {
-            const currentFormData = {
-                fromLocation,
-                toLocation,
-                dateValue,
-                returnDateValue,
-                passengers,
-                toleranceDays,
-                onlyDirectFlight,
-                selectedAirline,
-                flightClass,
-                multiCityItems
-            };
+    // useEffect(() => {
+    //     // Only save if we're not currently loading from persisted data
+    //     if (!isLoadingFromContext.current) {
+    //         const currentFormData = {
+    //             fromLocation,
+    //             toLocation,
+    //             dateValue,
+    //             returnDateValue,
+    //             passengers,
+    //             toleranceDays,
+    //             onlyDirectFlight,
+    //             selectedAirline,
+    //             flightClass,
+    //             multiCityItems
+    //         };
 
-            // Only save if the form data has actually changed
-            const hasChanged = JSON.stringify(currentFormData) !== JSON.stringify(previousFormData.current);
-            if (hasChanged) {
-                previousFormData.current = currentFormData;
-                setFormData(currentFormData);
-            }
-        }
-    }, [fromLocation, toLocation, dateValue, returnDateValue, passengers, toleranceDays, onlyDirectFlight, selectedAirline, flightClass, multiCityItems, setFormData]);
+    //         // Only save if the form data has actually changed
+    //         const hasChanged = JSON.stringify(currentFormData) !== JSON.stringify(previousFormData.current);
+    //         if (hasChanged) {
+    //             previousFormData.current = currentFormData;
+    //             setFormData(currentFormData);
+    //         }
+    //     }
+    // }, [fromLocation, toLocation, dateValue, returnDateValue, passengers, toleranceDays, onlyDirectFlight, selectedAirline, flightClass, multiCityItems, setFormData]);
 
-    // Cleanup function to reset flags
-    useEffect(() => {
-        return () => {
-            isLoadingFromContext.current = false;
-            previousFormData.current = null;
-            loadedFormDataRef.current = null;
-        };
-    }, []);
+
 
     const handleSearch = async (searchType, searchData) => {
         const payload = {
-            "origin": searchData.fromLocation,
-            "destination": searchData.toLocation,
+            "origin": searchData.fromLocation?.code,
+            "destination": searchData.toLocation?.code,
             "departureDate": searchData.dateValue,
             "adults": searchData.passengers.adult,
             "children": searchData.passengers.children,
             "infants": searchData.passengers.infant,
-            "cabin": "ECO",
+            "cabin": searchData.flightClass || selectedFlightClass || "ECO",
             "tripType": searchType,
             "directFlightsOnly": searchData.onlyDirectFlight,
             "currency": "GHS",
@@ -135,7 +108,7 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
         };
 
         console.log('Flight Search Payload:', payload);
-
+        console.log('Flight Search Search Data:', searchData);
         // Set loading state
         setLoading(true);
         setSearchData(payload);
@@ -150,19 +123,19 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
                 // Store flight results in context
                 setResults(response.data);
                 console.log('Flight search results:', response.data);
-                // notifications.show({
-                //     title: 'Flight search results',
-                //     message: 'Flight search results',
-                //     color: 'green',
-                //     position: 'top-right',
-                // });
-                // Navigate to search results page
                 if (window.location.pathname !== '/flights/search') {
                     setTimeout(() => {
                         navigate('/flights/search');
                         // window.location.href = '/flights/search';
                     }, 100);
                 }
+            } else {
+                notifications.show({
+                    title: 'Flight search error',
+                    message: response.message || 'Please try again',
+                    color: 'red',
+                    position: 'top-right',
+                });
             }
         } catch (error) {
             notifications.show({
@@ -176,9 +149,11 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
             setLoading(false);
             setResultLoading(false);
         }
-
-
     }
+    const handleSearchType = (type) => {
+        setSearchType(type);
+    }
+
 
 
     return (
@@ -187,105 +162,58 @@ const FlightSearch = ({ setResultLoading, isResultLoading }) => {
             delay={0}
             className="relative bg-white border-2 border-[#364A9C] rounded-2xl p-1 md:p-5 max-w-7xl mx-auto px-1 md:px-6"
         >
-            <Tabs defaultValue="oneway" variant="pills" color="#364A9C">
-                <div className='flex flex-col lg:flex-row lg:items-start md:gap-4 lg:gap-0'>
-                    <Tabs.List
-                        className="md:mb-4 lg:mb-6 rounded-xl bg-gray-50 border min-w-screen overflow-x-scroll lg:w-fit p-2"
-                    >
-                        <Tabs.Tab
-                            value="oneway"
-                            leftSection={<IconPlane size={16} />}
-                            className="text-sm font-medium flex-1 lg:flex-none"
-                        >
-                            <span className="text-base font-medium">One way</span>
-                        </Tabs.Tab>
-                        <Tabs.Tab
-                            value="roundtrip"
-                            leftSection={<IconPlaneDeparture size={16} />}
-                            className="text-sm font-medium flex-1 lg:flex-none"
-                        >
-                            <span className="text-base font-medium">Round Trip</span>
-                        </Tabs.Tab>
-                        <Tabs.Tab
-                            value="multicity"
-                            leftSection={<IconRoute size={16} />}
-                            className="text-sm font-medium flex-1 lg:flex-none"
-                        >
-                            <span className="text-base font-medium">Multi-city</span>
-                        </Tabs.Tab>
-                    </Tabs.List>
-
-                    <div className="lg:ml-6 w-full lg:w-auto md:block hidden">
-                        <Select
-                            placeholder="Select class"
-                            data={[
-                                { value: 'economy', label: 'Economy' },
-                                { value: 'business', label: 'Business' },
-                                { value: 'first-class', label: 'First Class' }
-                            ]}
-                            value={flightClass}
-                            onChange={setFlightClass}
-                            className="w-full lg:w-fit mt-1 font-bold"
-                            styles={{
-                                input: {
-                                    width: '100%',
-                                    height: '50px',
-                                    textAlign: 'center',
-                                    borderColor: '#E7E7E7',
-                                    borderWidth: '2px',
-                                    '&:focus': {
-                                        borderColor: '#364A9C',
-                                        boxShadow: '0 0 0 1px #364A9C'
-                                    }
-                                }
-                            }}
-                        />
-                    </div>
+            <div className="flex justify-between">
+            <div className='flex items-center border border-gray-300 overflow-hidden rounded-lg md:text-base text-sm w-fit md:mx-0 mx-auto mb-2'>
+                <button onClick={() => handleSearchType('oneway')} className={`${searchType === 'oneway' ? 'bg-[#364A9C] text-white rounded-l-lg border border-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'} px-4 py-2 border-r flex items-center gap-2`}>
+                    <IconPlane size={16}/>
+                    <span>One Way</span>
+                </button>
+                <button onClick={() => handleSearchType('roundtrip')} className={`${searchType === 'roundtrip' ? 'bg-[#364A9C] text-white border border-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'} px-4 py-2 border-r  flex md:flex-0 flex-1l items-center gap-2`}>
+                    <IconPlaneDeparture size={16} />
+                    <span>Round Trip</span>
+                </button>
+                <button onClick={() => handleSearchType('multicity')} className={`${searchType === 'multicity' ? 'bg-[#364A9C] text-white rounded-r-lg border border-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'} px-4 py-2 flex items-center gap-2`}>
+                    <IconRoute size={16} />
+                    <span>Multi-city</span>
+                </button>
                 </div>
-
-                <Tabs.Panel value="oneway" className="md:pt-1">
+                <div>
+                    <Select
+                        placeholder="Select class"
+                        data={[
+                            { value: 'economy', label: 'Economy' },
+                            { value: 'business', label: 'Business' },
+                            { value: 'first-class', label: 'First Class' }
+                        ]}
+                        value={selectedFlightClass}
+                        onChange={setSelectedFlightClass}
+                    />
+                </div>
+            </div>
+            <div>
+                {searchType === 'oneway' && <div>
                     <OneWayFlightSearch
                         handleSearch={handleSearch}
                         isResultLoading={isResultLoading}
                     />
-                </Tabs.Panel>
-
-                <Tabs.Panel value="roundtrip" className="pt-1">
-                    <RoundTripFlightSearch
+                </div>}
+                {searchType === 'roundtrip' && <div>
+                    {/* <RoundTripFlightSearch
                         fromLocation={fromLocation}
                         setFromLocation={setFromLocation}
                         toLocation={toLocation}
                         setToLocation={setToLocation}
-                        dateValue={dateValue}
-                        setDateValue={setDateValue}
-                        returnDateValue={returnDateValue}
-                        setReturnDateValue={setReturnDateValue}
-                        passengers={passengers}
-                        setPassengers={setPassengers}
-                        toleranceDays={toleranceDays}
-                        setToleranceDays={setToleranceDays}
-                        onlyDirectFlight={onlyDirectFlight}
-                        setOnlyDirectFlight={setOnlyDirectFlight}
-                        selectedAirline={selectedAirline}
-                        setSelectedAirline={setSelectedAirline}
-                        handleSearch={handleSearch}
-                    />
-                </Tabs.Panel>
-
-                <Tabs.Panel value="multicity" className="pt-1">
-                    <MultiCityFlightSearch
+                    /> */}
+                </div>}
+                {searchType === 'multicity' && <div>
+                    {/* <MultiCityFlightSearch
                         selectedAirline={selectedAirline}
                         setSelectedAirline={setSelectedAirline}
                         toleranceDays={toleranceDays}
                         setToleranceDays={setToleranceDays}
-                        onlyDirectFlight={onlyDirectFlight}
-                        setOnlyDirectFlight={setOnlyDirectFlight}
-                        handleSearch={handleSearch}
-                        multiCityItems={multiCityItems}
-                        setMultiCityItems={setMultiCityItems}
-                    />
-                </Tabs.Panel>
-            </Tabs>
+                    /> */}
+                </div>}
+            </div>
 
         </AnimatedDiv>
     );
@@ -296,124 +224,68 @@ export default FlightSearch;
 
 const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
 
-    const { searchData } = useSearchContext();
-    // console.log('searchData', searchData)
-    // get todays date
+    const { setSearchData, searchData, results } = useSearchContext(); 
     const today = new Date();
     const [dateValue, setDateValue] = useState(today);
     const [passengers, setPassengers] = useState({ adult: 1, children: 0, infant: 0 });
     const [toleranceDays, setToleranceDays] = useState(1);
     const [onlyDirectFlight, setOnlyDirectFlight] = useState(false);
-    const [fromLocation, setFromLocation] = useState('ACC'); // Use uppercase to match API response
-    const [toLocation, setToLocation] = useState('');
+    const [fromLocation, setFromLocation] = useState({
+        code: 'ACC',
+        name: 'Accra - Kotoka',
+        country: {
+            code: 'GH',
+            name: 'GH'
+        }
+    }); // Use uppercase to match API response
+    const [toLocation, setToLocation] = useState({});
     const [selectedAirline, setSelectedAirline] = useState('');
     const [flightClass, setFlightClass] = useState('economy');
 
     const handleOneWaySearch = () => {
-        handleSearch('oneway', { fromLocation, toLocation, selectedAirline, dateValue, passengers, toleranceDays, onlyDirectFlight })
+        const data = {
+            fromLocation,
+            toLocation,
+            flightClass,
+            selectedAirline,
+            dateValue,
+            passengers,
+            toleranceDays,
+            onlyDirectFlight,
+            flightClass
+        }
+        handleSearch('oneway', data)
+        setSearchData(data)
     }
-
-    const [apiAirportsfrom, setApiAirportsfrom] = useState([]);
-    const [apiAirportsto, setApiAirportsto] = useState([]);
-    const [isLoading, setIsLoading] = useState({ from: false, to: false });
-    const searchTimeoutRef = useRef(null);
-    const hasInitializedRef = useRef(false);
-    // Search airports from API
-    const searchAirportsFromAPI = async (query = 'acc', type = 'from') => {
-        console.log('🔍 ======= SearchAirportsFromAPI:', query, 'type:', type);
-
-        setIsLoading(prev => ({ ...prev, [type]: true }));
-        try {
-            const response = await searchAirports(query);
-            console.log('searchAirports', response.data.airports)
-            if (response.status) {
-                if (type === 'from') {
-                    setApiAirportsfrom(response.data.airports || []);
-                    console.log('✅ Set apiAirportsfrom:', response.data.airports);
-                    // If this is the initial load and we have a default value, ensure it's set
-                    if (query === 'acc' && fromLocation === 'ACC') {
-                        console.log('🎯 Initial load with acc - fromLocation:', fromLocation);
-                    }
-                } else if (type === 'to') {
-                    setApiAirportsto(response.data.airports || []);
-                    console.log('✅ Set apiAirportsto:', response.data.airports);
-                }
-            } else {
-                console.error('Failed to search airports:', response.message);
-            }
-        } catch (error) {
-            console.error('Error searching airports:', error);
-        } finally {
-            setIsLoading(prev => ({ ...prev, [type]: false }));
-        }
-    };
-
-    const handleFromSearchChange = (searchValue) => {
-        console.log('🔍 ======= handleFromSearchChange:', searchValue);
-        // Clear existing timeout
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
-        }
-
-        // Set new timeout for debounced search
-        searchTimeoutRef.current = setTimeout(() => {
-            if (searchValue && searchValue.length >= 3) {
-                searchAirportsFromAPI(searchValue, 'from');
-            } else if (searchValue === '') {
-                searchAirportsFromAPI('acc', 'from');
-            }
-        }, 300); // 300ms debounce
-    };
-
-    const handleToSearchChange = (searchValue) => {
-        console.log('🔍 ======= handleToSearchChange:', searchValue);
-        // Clear existing timeout
-        if (searchTimeoutRef.current) {
-            clearTimeout(searchTimeoutRef.current);
-        }
-
-        // Set new timeout for debounced search
-        searchTimeoutRef.current = setTimeout(() => {
-            if (searchValue && searchValue.length >= 3) {
-                searchAirportsFromAPI(searchValue, 'to');
-            } else if (searchValue === '') {
-                searchAirportsFromAPI('', 'to');
-            }
-        }, 300); // 300ms debounce
-    };
-
+ 
     useEffect(() => {
         console.log('CONTEXT SEARCH DATA - USE EFFECT', searchData)
-        if (searchData?.origin) {
-            console.log('CONTEXT SEARCH DATA - GET', searchData)
-            setFromLocation(searchData.origin);
+        if (searchData?.fromLocation) {
+            setFromLocation(searchData.fromLocation);
         }
-        if (searchData?.destination) {
-            setToLocation(searchData.destination);
-            searchAirportsFromAPI(searchData.destination, 'to')
+        if (searchData?.toLocation) {
+            setToLocation(searchData.toLocation);
         }
-        if (searchData?.departureDate) {
-            setDateValue(searchData.departureDate);
+        if (searchData?.flightClass) {
+            setFlightClass(searchData.flightClass);
         }
-        if (searchData?.adults || searchData?.children || searchData?.infants) {
-            let passengers = { adult: searchData.adults || 1, children: searchData.children || 0, infant: searchData.infants || 0 };
-            setPassengers(passengers);
+        if (searchData?.selectedAirline) {
+            setSelectedAirline(searchData.selectedAirline);
+        }
+        if (searchData?.dateValue) {
+            setDateValue(searchData.dateValue);
+        }
+        if (searchData?.passengers) {
+            setPassengers(searchData.passengers);
         }
         if (searchData?.toleranceDays) {
-            setToleranceDays(searchData.toleranceDays || 1);
+            setToleranceDays(searchData.toleranceDays);
         }
-        if (searchData?.directFlightsOnly) {
-            setOnlyDirectFlight(searchData.directFlightsOnly || false);
+        if (searchData?.onlyDirectFlight) {
+            setOnlyDirectFlight(searchData.onlyDirectFlight);
         }
-        if (searchData?.airline) {
-            setSelectedAirline(searchData.selectedAirline || '');
-        }
-        searchAirportsFromAPI('acc', 'from');
-
     }, []);
 
-    const [customSearchData, setCustomSearchData] = useState([]);
-    const [showFrom, setShowFrom] = useState(false);
 
     return (
         <div>
@@ -421,14 +293,14 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                 <div className='md:border-2 border md:mt-0 mt-1 border-[#E7E7E7] w-full rounded-2xl flex flex-col lg:flex-row'>
 
                     <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 pb-6 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
-                        <CustomSearch label="From" selectedAirport={(val) => setFromLocation(val?.code)} />
+                        <CustomSearch value={fromLocation} label="From" selectedAirport={(val) => setFromLocation(val)} />
                         <div className='rounded-full h-fit p-1 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
                         </div>
                     </div>
 
                     <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 md:py-4 pt-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
-                        <CustomSearch label="To" selectedAirport={(val) => setToLocation(val?.code)} />
+                        <CustomSearch value={toLocation} label="To" selectedAirport={(val) => setToLocation(val)} />
                     </div>
 
                     <div className='grid grid-cols-2 gap-0'>
@@ -450,7 +322,6 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                             />
                         </div>
                     </div>
-
                 </div>
 
                 <div className="flex flex-col lg:flex-row justify-between mt-1 lg:mt-2 gap-4 lg:gap-0">
@@ -488,9 +359,10 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                                 <Select
                                     placeholder="Select class"
                                     data={[
-                                        { value: 'economy', label: 'Economy' },
-                                        { value: 'business', label: 'Business' },
-                                        { value: 'first-class', label: 'First Class' }
+                                        { value: 'ECO', label: 'Economy' },
+                                        { value: 'PRE', label: 'Premium Economy' },
+                                        { value: 'BUS', label: 'Business' },
+                                        { value: '1ST', label: 'First Class' }
                                     ]}
                                     value={flightClass}
                                     onChange={setFlightClass}

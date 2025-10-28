@@ -30,7 +30,7 @@ const FlightPage = () => {
   const [resultLoading, setResultLoading] = useState(false);
   const navigate = useNavigate();
   const moveToSearchPage = () => {
-    navigate('/flights/search');
+    // navigate('/flights/search');
   }
   // Auto scroll to top when page loads
   useScrollToTop();

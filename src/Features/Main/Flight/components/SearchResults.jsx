@@ -117,7 +117,6 @@ const SearchResults = () => {
                 transformFlightData(apiFlight, index, tripType)
             );
         }
-        
         // Fallback to mock data
         return [];
     }, [results?.results?.flights, tripType]);

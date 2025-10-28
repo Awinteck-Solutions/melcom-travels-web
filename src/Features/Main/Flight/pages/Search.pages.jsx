@@ -48,7 +48,6 @@ const SearchPage = () => {
         </ScrollAnimation>
 
         {/* Search Results with Filter Sidebar */}
-        <ScrollAnimation animation="slideLeft">
           <div className="flex gap-8 my-6 px-6 py-4 max-w-7xl mx-auto">
             {/* Filter Sidebar - Only show when there are results */}
             {results?.results?.flights && results.results.flights.length > 0 && (
@@ -173,7 +172,6 @@ const SearchPage = () => {
               )}
             </div>
           </div>
-        </ScrollAnimation>
       </div>
     </Container>
   );

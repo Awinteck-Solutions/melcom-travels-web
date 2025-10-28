@@ -122,7 +122,7 @@ const BlogCard = ({ post, variant = 'default' }) => {
   if (variant === 'related') {
     return (
       <div
-        className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+        className="w-[300px] bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
         onClick={() => handleBlogClick(post.id)}
       >
         <img
