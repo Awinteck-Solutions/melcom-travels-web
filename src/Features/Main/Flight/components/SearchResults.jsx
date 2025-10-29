@@ -230,12 +230,12 @@ const SearchResults = () => {
         const bookingData = {
             flight: flight,
             passengerInfo: {
-                adults: searchData?.adults || 1,
-                children: searchData?.children || 0,
-                infants: searchData?.infants || 0,
-                totalPassengers: (searchData?.adults || 1) + (searchData?.children || 0) + (searchData?.infants || 0)
+                adults: searchData.passengers.adult || 1,
+                children: searchData.passengers.children || 0,
+                infants: searchData.passengers.infant || 0,
+                totalPassengers: (searchData.passengers.adult || 1) + (searchData.passengers.children || 0) + (searchData.passengers.infant || 0)
             },
-            searchData: searchData // Store the complete search data for reference
+            // searchData: searchData // Store the complete search data for reference
         };
         
         // // Store booking data in sessionStorage
@@ -248,7 +248,11 @@ const SearchResults = () => {
         
         // // Use window.location.href for immediate navigation
         console.log('Using window.location.href for navigation');
-        window.location.href = '/#/checkout';
+        // window.location.href = '/checkout';
+        // navigate('/');
+        window.location.href = `/checkout?data=${encodeURIComponent(JSON.stringify(bookingData))}`;
+        // navigate(`/checkout?data=${encodeURIComponent(JSON.stringify(bookingData))}`);
+
     };
 
     // Handle viewing flight details

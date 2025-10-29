@@ -135,7 +135,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 
                 {/* Flight route */}
                 <Group className='md:mt-0 mt-[-20px]' justify="space-between" align="center">
-                    <Stack gap="xs" align="center" className='m-auto md:m-0 mb-[-11px]'>
+                    <Stack gap="xs" align="center" className='m-auto md:m-0 mb-[-11px] md:w-fit w-full'>
                         <p className='lg:text-xl text-base font-bold text-gray-800'>
                             {formatTime(flight.departure)}
                         </p>
@@ -146,7 +146,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 
                     <FlightRoute />
 
-                    <Stack gap="xs" align="center" className='m-auto md:m-0 mt-[-13px]'>
+                    <Stack gap="xs" align="center" className='m-auto md:m-0 mt-[-13px] md:w-fit w-full'>
                         <p className='lg:text-xl text-base font-bold text-gray-800'>
                             {formatTime(flight.arrival || flight.departure)}
                         </p>

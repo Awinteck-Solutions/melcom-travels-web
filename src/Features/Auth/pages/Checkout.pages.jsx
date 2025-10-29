@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useGlobalContext } from '../../../context';
@@ -230,40 +230,47 @@ const PassengerForm = React.memo(({ passengerKey, title, formik }) => (
 ));
 const CheckoutPage = () => {
     const navigate = useNavigate();
-    const location = useLocation();
+    const [params] = useSearchParams();
     const { user } = useGlobalContext();
     const { searchData } = useSearchContext();
+    const [passengerCounts, setPassengerCounts] = useState({});
+    const [bookingData, setBookingData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [flight, setFlight] = useState();
+
+    // Parse booking data only once when component mounts
+    useEffect(() => {
+        try {
+            const dataParam = params.get('data');
+            if (dataParam) {
+                const parsedData = JSON.parse(dataParam);
+                console.log('Parsed booking data:', parsedData);
+                setBookingData(parsedData);
+                setFlight(parsedData.flight);
+                setPassengerCounts(parsedData.passengerInfo);
+                setIsLoading(false);
+            } else {
+                console.log('No data parameter found');
+                navigate('/flights/search');
+            }
+        } catch (error) {
+            console.error('Error parsing booking data:', error);
+            navigate('/flights/search');
+        }
+    }, [params, navigate]);
     
     // Auto scroll to top when page loads
     useScrollToTop();
-    
-    // Get passenger counts from search data or use defaults
-    const getPassengerCounts = () => {
-        if (searchData) {
-            const counts = {
-                adult: searchData.adults || 1,
-                children: searchData.children || 0,
-                infant: searchData.infants || 0
-            };
-            console.log('Passenger counts from search context:', counts);
-            return counts;
-        }
-        // Fallback to default if no search data
-        console.log('No search data available, using default passenger counts');
-        return { adult: 1, children: 0, infant: 0 };
-    };
-    
-    const [passengerCounts, setPassengerCounts] = useState(getPassengerCounts());
-    const [checkoutData, setCheckoutData] = useState(null);
+
+   const [checkoutData, setCheckoutData] = useState(null);
     const [showPaymentIframe, setShowPaymentIframe] = useState(false);
     
     // Initialize passenger data structure for Formik
     const initializePassengerData = (passengerCounts) => {
         const data = {};
         let passengerIndex = 1;
-        
         // Add adults
-        for (let i = 0; i < passengerCounts.adult; i++) {
+        for (let i = 0; i < passengerCounts.adults; i++) {
             data[`adult${passengerIndex}`] = {
                 title: '',
                 firstName: '',
@@ -299,7 +306,7 @@ const CheckoutPage = () => {
         }
         
         // Add infants
-        for (let i = 0; i < passengerCounts.infant; i++) {
+        for (let i = 0; i < passengerCounts.infants; i++) {
             data[`infant${passengerIndex}`] = {
                 title: '',
                 firstName: '',
@@ -315,34 +322,8 @@ const CheckoutPage = () => {
             };
             passengerIndex++;
         }
-        
         return data;
     };
-
-    // Default flight data (fallback)
-    const defaultFlight = {
-        id: 1,
-        from: 'Accra - Kotoka (ACC)',
-        fromCode: 'ACC',
-        to: 'Abidjan - Felix Houphouet Boigny (ABJ)',
-        toCode: 'ABJ',
-        airlineLogo: '/emirates.svg',
-        departure: new Date('2025-01-15T08:30:00'),
-        arrival: new Date('2025-01-15T14:45:00'),
-        airline: 'Emirates',
-        planeType: 'Boeing 777-300ER',
-        flightType: 'round-trip',
-        returnDate: new Date('2025-01-15T14:45:00'),
-        price: 750,
-        duration: '6h 15m',
-        stops: 1,
-        flightNumber: 'EK1234',
-        class: 'Q',
-        segment: null
-    };
-
-    // Get flight data from location state or use default
-    const [flight, setFlight] = useState(defaultFlight);
     
     // Create dynamic Yup validation schema
     const createValidationSchema = (passengerCounts) => {
@@ -367,64 +348,8 @@ const CheckoutPage = () => {
         });
     };
 
-    useEffect(() => {
-        console.log('Checkout page mounted');
-        console.log('Location state:', location.state);
-        console.log('Current pathname:', location.pathname);
-        console.log('Search data:', searchData);
-
-        // Check sessionStorage first (since we're using window.location.href)
-        try {
-            const storedBookingData = sessionStorage.getItem('selectedFlight');
-            if (storedBookingData) {
-                const parsedBookingData = JSON.parse(storedBookingData);
-                console.log('Booking data received from sessionStorage:', parsedBookingData);
-                
-                // Handle both old format (just flight) and new format (booking data with passenger info)
-                if (parsedBookingData.flight) {
-                    // New format: booking data with flight and passenger info
-                    setFlight(parsedBookingData.flight);
-                    
-                    // Use passenger info from stored booking data
-                    if (parsedBookingData.passengerInfo) {
-                        const storedPassengerCounts = {
-                            adult: parsedBookingData.passengerInfo.adults || 1,
-                            children: parsedBookingData.passengerInfo.children || 0,
-                            infant: parsedBookingData.passengerInfo.infants || 0
-                        };
-                        console.log('Using stored passenger counts:', storedPassengerCounts);
-                        setPassengerCounts(storedPassengerCounts);
-                    }
-                } else {
-                    // Old format: just flight data
-                    setFlight(parsedBookingData);
-                }
-                
-                // Clear sessionStorage after use
-                sessionStorage.removeItem('selectedFlight');
-                return;
-            }
-        } catch (error) {
-            console.error('Error parsing stored booking data:', error);
-        }
-
-        // Check if flight data was passed from the booking flow (React Router)
-        if (location.state && location.state.flight) {
-            console.log('Flight data received from location state:', location.state.flight);
-            setFlight(location.state.flight);
-        } else if (!sessionStorage.getItem('selectedFlight')) {
-            console.log('No flight data received, using default');
-            console.log('Using default flight data:', defaultFlight);
-        }
-
-        // Initialize passenger counts based on search context (fallback)
-        const counts = getPassengerCounts();
-        console.log('Passenger counts from search context:', counts);
-        setPassengerCounts(counts);
-    }, [location.state, location.pathname, searchData]);
-
-    // Formik submit handler
-    const handleSubmit = async (values) => {
+   
+  const handleSubmit = async (values) => {
         try {
             // Show loading notification
             notifications.show({
@@ -507,7 +432,7 @@ const CheckoutPage = () => {
         }
     };
 
-    // Initialize Formik
+    // Initialize Formik with proper dependencies
     const formik = useFormik({
         initialValues: {
             passengers: initializePassengerData(passengerCounts)
@@ -516,6 +441,15 @@ const CheckoutPage = () => {
         onSubmit: handleSubmit,
         enableReinitialize: true // Reinitialize when passengerCounts change
     });
+
+    // Update formik when passengerCounts change
+    useEffect(() => {
+        if (Object.keys(passengerCounts).length > 0) {
+            formik.setValues({
+                passengers: initializePassengerData(passengerCounts)
+            });
+        }
+    }, [passengerCounts]);
 
     // Generate passenger forms dynamically using useMemo for optimization
     const generatePassengerForms = useMemo(() => {
@@ -670,7 +604,7 @@ const CheckoutPage = () => {
     };
 
     const CartSummary = () => {
-        const totalPassengers = passengerCounts.adult + passengerCounts.children + passengerCounts.infant;
+        const totalPassengers = passengerCounts.totalPassengers;
         const basePrice = flight.price * totalPassengers;
         const taxes = basePrice * 0.15;
         const discount = basePrice * 0.05;
@@ -727,6 +661,21 @@ const CheckoutPage = () => {
             </div>
         );
     };
+
+    // Show loading state while data is being loaded
+    if (isLoading) {
+        return (
+            <Container>
+                <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading checkout...</p>
+                        <p className="text-sm text-gray-500 mt-2">Please wait while we prepare your booking</p>
+                    </div>
+                </div>
+            </Container>
+        );
+    }
 
     return (
         <Container>
