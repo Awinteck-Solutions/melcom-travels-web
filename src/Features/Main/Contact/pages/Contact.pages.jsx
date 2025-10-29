@@ -117,7 +117,7 @@ const ContactPage = () => {
       </div>
 
       <div className=''>
-        <div className='px-6'>
+        <div className='md:px-6 px-1'>
           {/* Hero Section */}
           <ScrollAnimation animation="fadeUp">
             <div className="relative pb-20 rounded-2xl">
@@ -125,7 +125,7 @@ const ContactPage = () => {
                 <h1 className=" text-gray-400 mb-1 tracking-wider">
                   CONTACT US
                 </h1>
-                <h2 className="md:text-3xl font-bold text-gray-800 leading-tight">
+                <h2 className="md:text-3xl text-xl font-bold text-gray-800 leading-tight">
                   We're Here to Help You Travel Better
                 </h2>
               </div>
@@ -133,13 +133,13 @@ const ContactPage = () => {
           </ScrollAnimation>
 
           {/* Main Content */}
-          <div className="max-w-7xl mx-auto px-6 pb-20">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          <div className="max-w-7xl mx-auto md:px-6 px-1 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 md:gap-16 gap-5">
               
               {/* Left Column - Contact Options */}
               <ScrollAnimation animation="slideLeft">
                 <div className="space-y-2">
-                  <h3 className="text-3xl font-bold text-gray-800 mb-8">Contact Options</h3>
+                  <h3 className="md:block hidden md:text-3xl text-xl font-bold text-gray-800 mb-8">Contact Options</h3>
                 
                 {/* Live Chat */}
                 <div className="flex items-start space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all duration-300 cursor-pointer group">
@@ -202,7 +202,7 @@ const ContactPage = () => {
               {/* Right Column - Support Form */}
               <ScrollAnimation animation="slideRight">
                 <div>
-                  <h3 className="text-3xl font-bold text-gray-800 mb-8">Support Form</h3>
+                  <h3 className="md:text-3xl text-xl font-bold text-gray-800 mb-8">Support Form</h3>
                 
                 <form onSubmit={formik.handleSubmit} className="space-y-6 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -59,12 +59,14 @@ const FlightPage = () => {
       return (
         <>
           <AnimatedButton 
+            onClick={()=> navigate('/signup')}
             className="px-6 py-3 border-2 border-[#364A9C] text-[#364A9C] rounded-lg font-medium hover:bg-[#364A9C] hover:text-white transition-colors"
             delay={0.2}
           >
             Sign Up
           </AnimatedButton>
           <AnimatedButton 
+            onClick={()=> navigate('/login')}
             className="px-6 py-3 bg-[#364A9C] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
             delay={0.3}
           >
