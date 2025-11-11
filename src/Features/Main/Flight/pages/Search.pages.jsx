@@ -50,14 +50,14 @@ const SearchPage = () => {
         {/* Search Results with Filter Sidebar */}
           <div className="flex gap-8 my-6 px-6 py-4 max-w-7xl mx-auto">
             {/* Filter Sidebar - Only show when there are results */}
-            {results?.results?.flights && results.results.flights.length > 0 && (
+            {(results?.results?.flights || results?.flights) && (results?.results?.flights || results?.flights)?.length > 0 && (
               <div className="hidden lg:block">
                 <FilterSidebar />
               </div>
             )}
 
             {/* Search Results */}
-            <div className={`${results?.results?.flights && results.results.flights.length > 0 ? 'flex-1' : 'w-full'}`}>
+            <div className={`${(results?.results?.flights || results?.flights) && (results?.results?.flights || results?.flights)?.length > 0 ? 'flex-1' : 'w-full'}`}>
               {loading && (
                 <div className="flex flex-col items-center justify-center py-12">
                   <LoadingSpinner size={60} color="#364A9C" />
@@ -77,11 +77,11 @@ const SearchPage = () => {
                 </div>
               )}
 
-              {!loading && !error && !resultLoading && results?.results?.flights && results.results.flights.length > 0 && (
+              {!loading && !error && !resultLoading && (results?.results?.flights || results?.flights) && (results?.results?.flights || results?.flights)?.length > 0 && (
                 <SearchResults />
               )}
 
-              {!loading && !error && (!results?.results?.flights || results.results.flights.length === 0) && searchData && (
+              {!loading && !error && (!(results?.results?.flights || results?.flights) || (results?.results?.flights || results?.flights)?.length === 0) && searchData && (
                 <div className="text-center py-12">
                   <div className="relative mb-8 h-24 flex items-center justify-center">
                     {/* Gentle floating plane animation */}
@@ -127,7 +127,7 @@ const SearchPage = () => {
                 </div>
               )}
 
-              {!loading && !error && (!results?.results?.flights || results.results.flights.length === 0) && !searchData && (
+              {!loading && !error && (!(results?.results?.flights || results?.flights) || (results?.results?.flights || results?.flights)?.length === 0) && !searchData && (
                 <div className="text-center py-12">
                   <div className="relative mb-8 h-24 flex items-center justify-center">
                     {/* Gentle floating plane animation */}

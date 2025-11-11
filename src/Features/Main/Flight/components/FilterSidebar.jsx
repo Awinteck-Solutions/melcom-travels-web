@@ -20,16 +20,25 @@ const FilterSidebar = () => {
     
     // Extract price range from results
     const priceRangeData = useMemo(() => {
-        if (!results?.results?.flights || results.results.flights.length === 0) {
+        const flights = results?.results?.flights || results?.flights;
+        if (!flights || flights.length === 0) {
             return { min: 100, max: 1200 };
         }
 
-        const prices = results.results.flights.map(flight => parseFloat(flight.price.total));
-        const minPrice = Math.floor(Math.min(...prices));
-        const maxPrice = Math.ceil(Math.max(...prices));
+        // Extract all prices from all flights' prices arrays
+        const allPrices = flights.flatMap(flight => 
+            flight.prices?.map(price => parseFloat(price.price.total)) || []
+        );
+        
+        if (allPrices.length === 0) {
+            return { min: 100, max: 1200 };
+        }
+        
+        const minPrice = Math.floor(Math.min(...allPrices));
+        const maxPrice = Math.ceil(Math.max(...allPrices));
         
         return { min: minPrice, max: maxPrice };
-    }, [results?.results?.flights]);
+    }, [results?.results?.flights, results?.flights]);
 
     // State for all filters
     const [selectedClass, setSelectedClass] = useState('economy');
@@ -50,7 +59,8 @@ const FilterSidebar = () => {
 
     // Extract unique airlines from results
     const airlines = useMemo(() => {
-        if (!results?.results?.flights) {
+        const flights = results?.results?.flights || results?.flights;
+        if (!flights) {
             return [
                 'Emirate Airline',
                 'RwandaAir',
@@ -64,20 +74,28 @@ const FilterSidebar = () => {
         }
 
         const uniqueAirlines = new Set();
-        results.results.flights.forEach(flight => {
-            flight.segments.forEach(segment => {
-                if (segment.airline && segment.airline.name) {
-                    uniqueAirlines.add(segment.airline.name);
-                }
-            });
+        flights.forEach(flight => {
+            // Add main airline if available
+            if (flight.airline) {
+                uniqueAirlines.add(flight.airline);
+            }
+            // Add airlines from segments
+            if (flight.segments) {
+                flight.segments.forEach(segment => {
+                    if (segment.airline && segment.airline.name) {
+                        uniqueAirlines.add(segment.airline.name);
+                    }
+                });
+            }
         });
 
         return Array.from(uniqueAirlines).sort();
-    }, [results?.results?.flights]);
+    }, [results?.results?.flights, results?.flights]);
 
     // Extract stops data from results
     const stops = useMemo(() => {
-        if (!results?.results?.flights) {
+        const flights = results?.results?.flights || results?.flights;
+        if (!flights) {
             return [
                 { label: 'Direct flight (0)', value: 'direct', count: 0 },
                 { label: '1 Stop', value: '1-stop', count: 0 },
@@ -91,14 +109,16 @@ const FilterSidebar = () => {
             '1-plus-stops': 0
         };
 
-        results.results.flights.forEach(flight => {
-            const flightStops = flight.segments.length - 1;
-            if (flightStops === 0) {
-                stopCounts.direct++;
-            } else if (flightStops === 1) {
-                stopCounts['1-stop']++;
-            } else if (flightStops > 1) {
-                stopCounts['1-plus-stops']++;
+        flights.forEach(flight => {
+            if (flight.segments && flight.segments.length > 0) {
+                const flightStops = flight.segments.length - 1;
+                if (flightStops === 0) {
+                    stopCounts.direct++;
+                } else if (flightStops === 1) {
+                    stopCounts['1-stop']++;
+                } else if (flightStops > 1) {
+                    stopCounts['1-plus-stops']++;
+                }
             }
         });
 
@@ -107,7 +127,7 @@ const FilterSidebar = () => {
             { label: `1 Stop (${stopCounts['1-stop']})`, value: '1-stop', count: stopCounts['1-stop'] },
             { label: `1+ Stops (${stopCounts['1-plus-stops']})`, value: '1-plus-stops', count: stopCounts['1-plus-stops'] }
         ];
-    }, [results?.results?.flights]);
+    }, [results?.results?.flights, results?.flights]);
 
     // Handle airline selection
     const handleAirlineChange = (airline, checked) => {

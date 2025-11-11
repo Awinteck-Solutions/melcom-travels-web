@@ -1,18 +1,66 @@
 import { Modal, Table, Text, Group, Button, Stack } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
 
-const LuggageInfoModal = ({ opened, onClose }) => {
-    const baggageData = [
+const LuggageInfoModal = ({ opened, onClose, baggageLimit, flightRoute }) => {
+    // console.log('LuggageInfoModal - baggageLimit:', baggageLimit);
+    // Format baggage information from API data
+    const formatBaggageInfo = (baggageLimit) => {
+        if (!baggageLimit) return null;
+
+        const quantity = parseInt(baggageLimit.quantity || '0');
+        const quantity2 = parseInt(baggageLimit.quantity_2 || '0');
+        const weight = baggageLimit.weight || '0';
+        const weight2 = baggageLimit.weight_2 || '';
+
+        let checkedBaggage = '';
+        if (baggageLimit.included === 'Yes') {
+            if (weight === '0' || weight === '') {
+                checkedBaggage = `${quantity} pc${quantity !== 1 ? 's' : ''}`;
+            } else {
+                checkedBaggage = `${quantity} pc${quantity !== 1 ? 's' : ''}, ${weight} kg`;
+            }
+            if (weight2 && weight2 !== 'any' && weight2 !== '0') {
+                checkedBaggage += `, max ${weight2}`;
+            }
+            if (baggageLimit.baggageSelectionAvailable === 'false') {
+                checkedBaggage += ' (extra charge may apply)';
+            }
+        } else {
+            checkedBaggage = 'Not included';
+        }
+
+        let additionalChecked = 'N/A';
+        if (quantity2 > 0) {
+            if (weight2 === 'any') {
+                additionalChecked = `${quantity2} pc${quantity2 !== 1 ? 's' : ''}, any weight`;
+            } else if (weight2 && weight2 !== '0') {
+                additionalChecked = `${quantity2} pc${quantity2 !== 1 ? 's' : ''}, ${weight2} kg`;
+            } else {
+                additionalChecked = `${quantity2} pc${quantity2 !== 1 ? 's' : ''}`;
+            }
+        }
+
+        return {
+            checkedBaggage: checkedBaggage,
+            additionalChecked: additionalChecked,
+            included: baggageLimit.included === 'Yes' ? 'Included' : 'Not included'
+        };
+    };
+
+    const baggageInfo = formatBaggageInfo(baggageLimit);
+    
+    const baggageData = baggageInfo ? [
         {
-            route: "Accra - Kotoka (ACC) → Amsterdam - Schiphol (AMS)",
-            carryOn: "1 pc, 23 kg, max 158 cm",
-            checkedBaggage: "1 pc, 23 kg, max 158 cm (extra charge may apply)",
-            additionalChecked: "1 pc, 12 kg, max 115 cm",
-            extraPersonal: "1 pc (Free)",
-            link: "Details"
-        },
+            route: flightRoute || "Flight Route",
+            carryOn: "1 pc (Standard allowance)",
+            checkedBaggage: baggageInfo.checkedBaggage,
+            additionalChecked: baggageInfo.additionalChecked,
+            extraPersonal: baggageInfo.included,
+            link: baggageLimit?.detailsAvailable === 'true' ? "Details" : "N/A"
+        }
+    ] : [
         {
-            route: "Amsterdam - Schiphol (AMS) → New York - JFK",
+            route: flightRoute || "Flight Route",
             carryOn: "1 pc, 23 kg, max 158 cm",
             checkedBaggage: "1 pc, 23 kg, max 158 cm (extra charge may apply)",
             additionalChecked: "1 pc, 12 kg, max 115 cm",

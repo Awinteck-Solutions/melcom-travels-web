@@ -21,7 +21,11 @@ const getAirportName = (airportCode) => {
 };
 
 // DTO function to transform API flight data to component format
-const transformFlightData = (apiFlight, index, tripType = 'oneway') => {
+const transformFlightData = (apiFlight, priceOption, index, tripType = 'oneway') => {
+    if (!apiFlight.segments || apiFlight.segments.length === 0) {
+        return null;
+    }
+    
     const firstSegment = apiFlight.segments[0];
     const lastSegment = apiFlight.segments[apiFlight.segments.length - 1];
     
@@ -40,16 +44,22 @@ const transformFlightData = (apiFlight, index, tripType = 'oneway') => {
     // Calculate stops (segments - 1)
     const stops = apiFlight.segments.length - 1;
     
-    // Get airline logo (you can map airline codes to logo paths)
-    const getAirlineLogo = (airlineCode) => {
+    // Get airline logo from segment or use default
+    const getAirlineLogo = (airline) => {
+        if (airline?.logoUrl) {
+            return airline.logoUrl;
+        }
         const logoMap = {
             'JL': '/emirates.svg',
             'NH': '/emirates.svg', 
             'ET': '/emirates.svg',
             'GK': '/emirates.svg',
-            'AF': '/emirates.svg'
+            'AF': '/emirates.svg',
+            'QR': '/emirates.svg',
+            'EK': '/emirates.svg',
+            'PR': '/emirates.svg'
         };
-        return logoMap[airlineCode] || '/emirates.svg';
+        return logoMap[airline?.code] || '/emirates.svg';
     };
     
     // Get aircraft type
@@ -66,38 +76,46 @@ const transformFlightData = (apiFlight, index, tripType = 'oneway') => {
         null;
     
     return {
-        id: index + 1,
-        from: `${getAirportName(firstSegment.departure.airport)} (${firstSegment.departure.airport})`,
+        id: `${index}-${priceOption.price.key || index}`,
+        from: `${firstSegment.departure.origin || getAirportName(firstSegment.departure.airport)} (${firstSegment.departure.airport})`,
         fromCode: firstSegment.departure.airport,
-        to: `${getAirportName(lastSegment.arrival.airport)} (${lastSegment.arrival.airport})`,
+        to: `${lastSegment.arrival.destination || getAirportName(lastSegment.arrival.airport)} (${lastSegment.arrival.airport})`,
         toCode: lastSegment.arrival.airport,
-        airlineLogo: getAirlineLogo(firstSegment.airline.code),
+        airlineLogo: getAirlineLogo(firstSegment.airline),
         departure: new Date(firstSegment.departure.time),
         arrival: new Date(lastSegment.arrival.time),
-        airline: apiFlight.airline || firstSegment.airline.name,
+        airline: apiFlight.airline || firstSegment.airline?.name || 'Unknown Airline',
         planeType: aircraftType,
         flightType: flightType,
         returnDate: returnDate,
-        price: parseFloat(apiFlight.price.total),
+        price: parseFloat(priceOption.price.total),
         duration: durationString,
         stops: stops,
         flightNumber: firstSegment.flightNumber,
-        class: firstSegment.cabinClass,
+        class: firstSegment.cabinClass || priceOption.flightCombinations?.uniformBrandName || 'Economy',
         segment: apiFlight.segments.map(seg => ({
             ...seg,
-            airline: seg.airline.name // Convert airline object to string
-        })), // Store full segment data for details
-        bookingReference: apiFlight.bookingReference,
-        currency: apiFlight.price.currency,
-        perPassenger: parseFloat(apiFlight.price.perPassenger),
+            airline: seg.airline?.name || seg.airline // Keep airline object or name
+        })),
+        bookingReference: priceOption.flightCombinations?.reference,
+        currency: priceOption.price.currency,
+        perPassenger: parseFloat(priceOption.price.perPassenger),
         // Additional fields for enhanced functionality
         segments: apiFlight.segments.map(seg => ({
             ...seg,
-            airline: seg.airline.name // Convert airline object to string
+            airline: seg.airline?.name || seg.airline // Keep airline object or name
         })),
         totalSegments: apiFlight.segments.length,
-        firstAirline: firstSegment.airline.name,
-        firstAirlineCode: firstSegment.airline.code
+        firstAirline: firstSegment.airline?.name || 'Unknown',
+        firstAirlineCode: firstSegment.airline?.code || '',
+        // Store all price options for this flight
+        allPrices: apiFlight.prices || [],
+        selectedPrice: priceOption,
+        // Store baggage and cancellation info
+        baggageLimit: priceOption.baggageLimit,
+        cancelTicket: priceOption.cancelTicket,
+        changeTicket: priceOption.changeTicket,
+        brandName: priceOption.flightCombinations?.uniformBrandName || firstSegment.brandName || 'Economy'
     };
 };
 
@@ -111,15 +129,38 @@ const SearchResults = () => {
 
     // Transform API results using DTO or fallback to mock data
     const rawFlightData = useMemo(() => {
-        if (results?.results?.flights) {
-            console.log('Transforming API flight data:', results.results.flights);
-            return results.results.flights.map((apiFlight, index) => 
-                transformFlightData(apiFlight, index, tripType)
-            );
+        const flights = results?.results?.flights || results?.flights;
+        if (flights) {
+            console.log('Transforming API flight data:', flights);
+            // Create one flight object per unique flight (segments), storing all price options
+            const transformedFlights = [];
+            flights.forEach((apiFlight, flightIndex) => {
+                if (apiFlight.prices && apiFlight.prices.length > 0) {
+                    // Use the first price as default, but store all prices
+                    const defaultPrice = apiFlight.prices[0];
+                    const transformed = transformFlightData(apiFlight, defaultPrice, flightIndex, tripType);
+                    if (transformed) {
+                        // Store all price options for dropdown
+                        transformed.allPrices = apiFlight.prices;
+                        transformed.selectedPriceIndex = 0;
+                        transformedFlights.push(transformed);
+                    }
+                } else {
+                    // Fallback if no prices array (shouldn't happen with new API)
+                    const fallbackPrice = { price: { total: '0', currency: 'GHS', perPassenger: '0' } };
+                    const transformed = transformFlightData(apiFlight, fallbackPrice, flightIndex, tripType);
+                    if (transformed) {
+                        transformed.allPrices = [fallbackPrice];
+                        transformed.selectedPriceIndex = 0;
+                        transformedFlights.push(transformed);
+                    }
+                }
+            });
+            return transformedFlights;
         }
-        // Fallback to mock data
+        // Fallback to empty array
         return [];
-    }, [results?.results?.flights, tripType]);
+    }, [results?.results?.flights, results?.flights, tripType]);
 
     // Filtering function
     const applyFilters = (flights, filterOptions) => {

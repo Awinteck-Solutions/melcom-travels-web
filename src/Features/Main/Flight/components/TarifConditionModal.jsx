@@ -1,14 +1,75 @@
 import { Modal, Table, Text, Group, Button, Stack } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
 
-const TarifConditionModal = ({ opened, onClose }) => {
+const TarifConditionModal = ({ opened, onClose, cancelTicket, changeTicket, currency = 'GHS' }) => {
+    // Format cancellation ticket information
+    // console.log('TarifConditionModal - cancelTicket:', cancelTicket);
+    const formatCancelTicket = (cancelTicket) => {
+        if (!cancelTicket) return null;
+
+        const currencySymbol = currency === 'GHS' ? 'GH₵' : currency;
+        const beforeAmount = parseFloat(cancelTicket.amountBeforeDeparture || 0);
+        const afterAmount = parseFloat(cancelTicket.amountAfterDeparture || 0);
+        
+        let description = '';
+        if (cancelTicket.included === 'Charged') {
+            if (beforeAmount === afterAmount && beforeAmount > 0) {
+                description = `Cancellation fee: ${currencySymbol}${beforeAmount.toLocaleString()} (same fee before and after departure)`;
+            } else if (beforeAmount > 0 && afterAmount > 0) {
+                description = `Cancellation fees: ${currencySymbol}${beforeAmount.toLocaleString()} before departure, ${currencySymbol}${afterAmount.toLocaleString()} after departure`;
+            } else {
+                description = 'Cancellation fees apply. Amount varies based on timing.';
+            }
+        } else {
+            description = 'Cancellation policy varies. Please check details.';
+        }
+
+        return {
+            condition: "Cancellation",
+            description: description,
+            details: "View Details"
+        };
+    };
+
+    // Format change ticket information
+    const formatChangeTicket = (changeTicket) => {
+        if (!changeTicket) return null;
+
+        const currencySymbol = currency === 'GHS' ? 'GH₵' : currency;
+        const beforeAmount = parseFloat(changeTicket.amountBeforeDeparture || 0);
+        const afterAmount = parseFloat(changeTicket.amountAfterDeparture || 0);
+        
+        let description = '';
+        if (changeTicket.included === 'Charged') {
+            if (beforeAmount === afterAmount && beforeAmount > 0) {
+                description = `Change fee: ${currencySymbol}${beforeAmount.toLocaleString()} (same fee before and after departure)`;
+            } else if (beforeAmount > 0 && afterAmount > 0) {
+                description = `Change fees: ${currencySymbol}${beforeAmount.toLocaleString()} before departure, ${currencySymbol}${afterAmount.toLocaleString()} after departure`;
+            } else {
+                description = 'Change fees apply. Amount varies based on timing.';
+            }
+        } else {
+            description = 'Change policy varies. Please check details.';
+        }
+
+        return {
+            condition: "Changes",
+            description: description,
+            details: "View Details"
+        };
+    };
+
+    const cancelInfo = formatCancelTicket(cancelTicket);
+    const changeInfo = formatChangeTicket(changeTicket);
+
+    // Build tarif data with API data if available, otherwise use defaults
     const tarifData = [
-        {
+        cancelInfo || {
             condition: "Cancellation",
             description: "Free cancellation up to 24 hours before departure. After that, cancellation fees may apply.",
             details: "View Details"
         },
-        {
+        changeInfo || {
             condition: "Changes",
             description: "Changes allowed up to 2 hours before departure. Change fees may apply based on fare type.",
             details: "View Details"
@@ -75,7 +136,7 @@ const TarifConditionModal = ({ opened, onClose }) => {
                             <Table.Tr className='text-xs md:text-sm'>
                                 <Table.Th><span className='text-xs md:text-sm text-[#364A9C] font-medium'>Condition</span></Table.Th>
                                 <Table.Th><span className='text-xs md:text-sm text-[#364A9C] font-medium'>Description</span></Table.Th>
-                                <Table.Th><span className='text-xs md:text-sm text-[#364A9C] font-medium'>Details</span></Table.Th>
+                                {/* <Table.Th><span className='text-xs md:text-sm text-[#364A9C] font-medium'>Details</span></Table.Th> */}
                             </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>
@@ -91,7 +152,7 @@ const TarifConditionModal = ({ opened, onClose }) => {
                                             {item.description}
                                         </Text>
                                     </Table.Td>
-                                    <Table.Td>
+                                    {/* <Table.Td>
                                         <Text 
                                             size="xs" 
                                             c="#364A9C" 
@@ -101,7 +162,7 @@ const TarifConditionModal = ({ opened, onClose }) => {
                                         >
                                             {item.details}
                                         </Text>
-                                    </Table.Td>
+                                    </Table.Td> */}
                                 </Table.Tr>
                             ))}
                         </Table.Tbody>

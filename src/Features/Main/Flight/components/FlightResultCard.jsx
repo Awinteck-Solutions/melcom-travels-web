@@ -10,7 +10,8 @@ import {
     ActionIcon,
     Avatar,
     Divider,
-    Timeline
+    Timeline,
+    Select
 } from '@mantine/core';
 import { IconPlane, IconChevronDown, IconShare, IconLuggage } from '@tabler/icons-react';
 import LuggageInfoModal from './LuggageInfoModal';
@@ -30,6 +31,15 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
     const [showDetails, setShowDetails] = useState(false);
     const [luggageModalOpened, setLuggageModalOpened] = useState(false);
     const [tarifModalOpened, setTarifModalOpened] = useState(false);
+    const [selectedPriceIndex, setSelectedPriceIndex] = useState(flight?.selectedPriceIndex || 0);
+
+    // Get current price based on selection
+    const currentPrice = flight?.allPrices && flight.allPrices.length > 0 
+        ? flight.allPrices[selectedPriceIndex] 
+        : null;
+    const displayPrice = currentPrice ? parseFloat(currentPrice.price.total) : flight?.price || 0;
+    const displayCurrency = currentPrice?.price?.currency || flight?.currency || 'GHS';
+    const displayBrandName = currentPrice?.flightCombinations?.uniformBrandName || flight?.brandName || flight?.class || 'Economy';
 
     // console.log('OneWayFlightResultCard - flight:', flight);
 
@@ -76,10 +86,14 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
     };
 
     // Format date for display
-    const formatDate = (date) => {
+    const formatDate = (date, timeZone) => {
         if (!date) return 'Unknown Date';
         const d = new Date(date);
-        return d.toLocaleDateString('en-US', {
+        return timeZone ? d.toLocaleDateString('en-US', {
+            year: 'numeric', 
+            month: 'long',
+            day: 'numeric'
+        }, { timeZone }) : d.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -111,7 +125,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                 {/* Header with airline, class, and price */}
                 <Group justify="space-between" align="center">
                     <Group gap="sm">
-                        <div className='w-10 h-10 rounded-full overflow-hidden'>
+                        <div className='w-12 h-12 flex items-center overflow-hidden'>
                             <img src={flight.airlineLogo || '/emirates.svg'} alt={flight.airline || 'Airline'} />
                         </div>
                         <Text size="lg" fw={500} c="gray.6">
@@ -119,18 +133,48 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                         </Text>
                     </Group>
 
-                    {/* <Badge
-                        variant="light"
-                        color="#364A9C"
-                        size="lg"
-                        rightSection={<IconChevronDown size={12} />}
-                    >
-                        Economy Lite
-                    </Badge> */}
-
-                    <p className='lg:text-3xl text-2xl font-bold text-gray-800'>
-                        GH₵{flight.price?.toLocaleString() || 'n/a'}
-                    </p>
+                    {/* Price and Class Selector */}
+                    <Stack gap="xs" align="flex-end">
+                        {flight?.allPrices && flight.allPrices.length > 1 ? (
+                            <Select
+                                value={selectedPriceIndex.toString()}
+                                onChange={(value) => {
+                                    const index = parseInt(value || '0');
+                                    setSelectedPriceIndex(index);
+                                }}
+                                data={flight.allPrices.map((priceOption, index) => {
+                                    const currency = priceOption.price?.currency || 'GHS';
+                                    const currencySymbol = currency === 'GHS' ? 'GH₵' : currency;
+                                    const price = parseFloat(priceOption.price.total);
+                                    return {
+                                        value: index.toString(),
+                                        label: `${priceOption.flightCombinations?.uniformBrandName || 'Economy'} - ${currencySymbol}${price.toLocaleString()}`
+                                    };
+                                })}
+                                size="sm"
+                                w={250}
+                                styles={{
+                                    input: {
+                                        borderColor: '#364A9C',
+                                        '&:focus': {
+                                            borderColor: '#364A9C',
+                                        }
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <Badge
+                                variant="light"
+                                color="#364A9C"
+                                size="lg"
+                            >
+                                {displayBrandName}
+                            </Badge>
+                        )}
+                        <p className='lg:text-3xl text-2xl font-bold text-gray-800'>
+                            {displayCurrency === 'GHS' ? 'GH₵' : displayCurrency}{displayPrice.toLocaleString() || 'n/a'}
+                        </p>
+                    </Stack>
                 </Group>
 
                 {/* Flight route */}
@@ -162,7 +206,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                         <Stack gap="xs" className='md:m-auto md:m-0 '>
                             <p className='text-sm text-gray-600'>Departure</p>
                             <Badge variant="light" color="gray" size="lg">
-                                <p className='text-sm font-semibold capitalize text-gray-800'>{formatDate(flight.departure)}</p>
+                                <p className='text-sm font-semibold capitalize text-gray-800'>{formatDate(flight.departure, flight.timeZone)}</p>
                             </Badge>
                         </Stack>
                         <Stack gap="xs" className='md:m-auto md:m-0'>
@@ -182,7 +226,7 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                                 <Stack gap="xs" className='md:m-auto md:m-0'>
                                     <p className='text-sm text-gray-600'>Return</p>
                                     <Badge variant="light" color="gray" size="lg">
-                                        <p className='text-sm font-semibold capitalize text-gray-800'>{formatDate(flight.returnDate)}</p>
+                                        <p className='text-sm font-semibold capitalize text-gray-800'>{formatDate(flight.returnDate, flight.timeZone)}</p>
                                     </Badge>
                                 </Stack>
                             )
@@ -196,7 +240,18 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                                 size="md"
                                 w="100%"
                                 radius="xl"
-                                onClick={() => onBookNow && onBookNow(flight)}
+                                onClick={() => {
+                                    // Update flight with selected price before booking
+                                    const flightWithSelectedPrice = {
+                                        ...flight,
+                                        price: displayPrice,
+                                        currency: displayCurrency,
+                                        selectedPrice: currentPrice,
+                                        selectedPriceIndex: selectedPriceIndex,
+                                        brandName: displayBrandName
+                                    };
+                                    onBookNow(flightWithSelectedPrice);
+                                }}
                             >
                                 Book Now
                             </Button>
@@ -235,25 +290,28 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
                                 {/* show bg-[#FEEDDB] if index is odd */}
                                 <div className={`w-full p-3 ${index % 2 === 0 ? 'bg-[#FEEDDB]' : 'bg-[#E5FBE8]'} flex gap-2 items-center`}> 
                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><g fill="none" stroke="#364A9C" strokeLinecap="round" strokeWidth="1.5"><path strokeLinejoin="round" d="M2 15q.215.641.5 1.245m1.625 2.501q.476.553 1.016 1.035M9 22a11 11 0 0 1-1.304-.518" /><path d="M12 13.5a1.5 1.5 0 1 0-1.5-1.5m1.5 1.5a1.5 1.5 0 0 1-1.5-1.5m1.5 1.5V16m-1.5-4H6" /><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2S2 6.477 2 12" /></g></svg>
-                                    <p>Journey time: <span className='font-bold'>{segment?.duration || calculateDuration(segment?.departure?.time, segment?.arrival?.time)}</span></p>
+                                    <p>Journey time: <span className='font-bold'>{calculateDuration(segment?.departure?.time, segment?.arrival?.time)}</span></p>
                                 </div>
                             </div>
                             <Timeline.Item m={0} ml={2} h={10}>
                                 <div className="md:grid grid-cols-6">
                                     <p className='col-span-2 text-gray-500 text-sm'>{formatTime(segment?.departure?.time)} <span className=''>{formatDate(segment?.departure?.time)}</span></p>
-                                    <p className='col-span-3 text-sm font-semibold'>{segment?.departure?.airport}</p>
+                                    <p className='col-span-3 text-sm font-semibold'>{segment?.departure?.origin}</p>
+                                    <p className='text-gray-500'>Terminal: <span className='font-bold text-gray-800'>{segment?.departure?.terminal || ''}</span></p>
                                 </div>
                             </Timeline.Item>
                             <Timeline.Item ml={2} >
                                 <div className="md:grid grid-cols-6">
                                     <p className='col-span-2 text-gray-500 text-sm'>{formatTime(segment?.arrival?.time)} <span className=''>{formatDate(segment?.arrival?.time)}</span></p>
-                                    <p className='col-span-3 text-sm font-semibold'>{segment?.arrival?.airport}</p>
+                                    <p className='col-span-3 text-sm font-semibold'>{segment?.arrival?.destination}</p>
+                                    <p className='text-gray-500'>Terminal: <span className='font-bold text-gray-800'>{segment?.arrival?.terminal || ''}</span></p>
                                 </div>
                             </Timeline.Item>
                             <div className='border-l-2 border-[#364A9C] h-24 m-0 pl-5 text-sm mt-4 space-y-2'>
                                 <p className='text-gray-500'>Flight Number: <span className='font-bold text-gray-800'>{segment?.flightNumber || ''}</span></p>
-                                <p className='text-gray-500'>Airline: <span className='font-bold text-gray-800'>{segment?.airline || ''}</span> | <span className='font-bold text-gray-800'> Flight Number: {segment?.flightNumber || ''}</span> | <span className='font-bold text-gray-800'> Class: {segment?.cabinClass || ''}</span></p>
+                                <p className='text-gray-500'>Airline: <span className='font-bold text-gray-800'>{typeof segment?.airline === 'string' ? segment.airline : (segment?.airline?.name || segment?.marketingAirline || '')}</span> | <span className='font-bold text-gray-800'> Flight Number: {segment?.flightNumber || ''}</span> | <span className='font-bold text-gray-800'> Class: {segment?.cabinClass || ''}</span></p>
                                 <p className='text-gray-500'>Plane type: <span className='font-bold text-gray-800'>{segment?.aircraft || ''}</span></p>
+                                
                             </div>
 
                         </Timeline>
@@ -357,12 +415,17 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
             <LuggageInfoModal
                 opened={luggageModalOpened}
                 onClose={() => setLuggageModalOpened(false)}
+                baggageLimit={currentPrice?.baggageLimit || flight?.baggageLimit}
+                flightRoute={flight ? `${flight.from} → ${flight.to}` : ''}
             />
 
             {/* Tarif Condition Modal */}
             <TarifConditionModal
                 opened={tarifModalOpened}
                 onClose={() => setTarifModalOpened(false)}
+                cancelTicket={currentPrice?.cancelTicket || flight?.cancelTicket}
+                changeTicket={currentPrice?.changeTicket || flight?.changeTicket}
+                currency={displayCurrency}
             />
             {/* </AnimatedCard> */}
         </div>
@@ -438,13 +501,7 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
     };
 
     return (
-        <AnimatedCard 
-            variant={fadeInUp} 
-            delay={0}
-            className="w-full max-w-[835px]" 
-            radius="xl" 
-            shadow="sm" 
-        >
+        <div className='w-full max-w-[835px] rounded-xl shadow-sm p-2 border border-gray-100 bg-white'>
             <Stack gap="lg">
                 {/* Header with airline, class, and price */}
                 <Group justify="space-between" align="center">
@@ -824,14 +881,19 @@ export const RoundTripFlightResultCard = ({ flight, onBookNow, onViewDetails }) 
             <LuggageInfoModal
                 opened={luggageModalOpened}
                 onClose={() => setLuggageModalOpened(false)}
+                baggageLimit={flight?.baggageLimit}
+                flightRoute={flight ? `${flight.fromCode || flight.from} → ${flight.toCode || flight.to}` : ''}
             />
 
             {/* Tarif Condition Modal */}
             <TarifConditionModal
                 opened={tarifModalOpened}
                 onClose={() => setTarifModalOpened(false)}
+                cancelTicket={flight?.cancelTicket}
+                changeTicket={flight?.changeTicket}
+                currency={flight?.currency || 'GHS'}
             />
-        </AnimatedCard>
+        </div>
     );
 };
 
@@ -1118,12 +1180,17 @@ export const MultiCityFlightResultCard = ({ flights, onBookNow, onViewDetails })
             <LuggageInfoModal
                 opened={luggageModalOpened}
                 onClose={() => setLuggageModalOpened(false)}
+                baggageLimit={flights && flights.length > 0 ? flights[0]?.baggageLimit : null}
+                flightRoute={flights && flights.length > 0 ? `${flights[0]?.fromCode || flights[0]?.from} → ${flights[flights.length - 1]?.toCode || flights[flights.length - 1]?.to}` : ''}
             />
 
             {/* Tarif Condition Modal */}
             <TarifConditionModal
                 opened={tarifModalOpened}
                 onClose={() => setTarifModalOpened(false)}
+                cancelTicket={flights && flights.length > 0 ? flights[0]?.cancelTicket : null}
+                changeTicket={flights && flights.length > 0 ? flights[0]?.changeTicket : null}
+                currency={flights && flights.length > 0 ? flights[0]?.currency || 'GHS' : 'GHS'}
             />
         </AnimatedCard>
     );

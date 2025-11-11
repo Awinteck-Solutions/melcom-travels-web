@@ -97,7 +97,7 @@ const FlightPage = () => {
           <AnimatedImage 
             src="/earth.svg" 
             alt="stars" 
-            className="md:w-1/2 w-4/5 m-auto object-cover" 
+            className="lg:w-3/12 md:w-1/2 w-4/5 m-auto object-cover" 
             variant={rotateIn}
             delay={0.2}
           />
@@ -105,7 +105,7 @@ const FlightPage = () => {
             <AnimatedImage 
               src="/plane.svg" 
               alt="plane" 
-              className="md:w-1/2 w-4/5 m-auto object-cover" 
+              className="lg:w-3/12 md:w-1/2 w-4/5 m-auto object-cover" 
               variant={fadeInRight}
               delay={0.8}
             />
