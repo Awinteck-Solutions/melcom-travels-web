@@ -67,7 +67,9 @@ const BlogPage = () => {
     const transformBlogData = (apiBlog) => ({
         id: apiBlog.id,
         title: apiBlog.title,
-        author: apiBlog.author,
+        author: typeof apiBlog.author === 'object' && apiBlog.author !== null 
+            ? apiBlog.author.name || apiBlog.author 
+            : apiBlog.author || 'Unknown Author',
         date: new Date(apiBlog.createdAt).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -75,8 +77,10 @@ const BlogPage = () => {
         }),
         description: apiBlog.excerpt,
         image: apiBlog.imageUrl || "/blog/b1.svg", // fallback image
-        category: apiBlog.category,
-        readTime: `${apiBlog.readTime} min read`,
+        category: typeof apiBlog.category === 'object' && apiBlog.category !== null
+            ? apiBlog.category.name || apiBlog.category
+            : apiBlog.category || 'travel',
+        readTime: `${apiBlog.readTime || 5} min read`,
         content: apiBlog.content,
         views: apiBlog.views,
         likes: apiBlog.likes,
