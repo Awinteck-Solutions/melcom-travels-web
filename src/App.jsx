@@ -21,6 +21,8 @@ import ChangePasswordPage from './Features/Auth/pages/ChangePassword.pages'
 import UpdateProfilePage from './Features/Auth/pages/UpdateProfile.pages'
 import CheckoutPage from './Features/Auth/pages/Checkout.pages'
 import BookingConfirmationPage from './Features/Auth/pages/BookingConfirmation.pages'
+import TermsAndConditionsPage from './Features/Main/Contact/pages/TermsAndConditions.pages'
+import PrivacyPolicyPage from './Features/Main/Contact/pages/PrivacyPolicy.pages'
 import { ScrollAnimationDemo } from './components/animations'
 import withScrollToTop from './components/withScrollToTop'
 import { CheckPage } from './Features/Auth/pages/Check.pages'
@@ -55,6 +57,8 @@ function AnimatedRoutes() {
         <Route path='/update-profile' element={withScrollToTop(UpdateProfilePage)()} />
         <Route path='/change-password' element={withScrollToTop(ChangePasswordPage)()} />
         <Route path='/faqs' element={withScrollToTop(FAQsPage)()} />
+        <Route path='/terms' element={withScrollToTop(TermsAndConditionsPage)()} />
+        <Route path='/privacy' element={withScrollToTop(PrivacyPolicyPage)()} />
         <Route path='/checkout' element={withScrollToTop(CheckoutPage)()} />
         {/* <Route path='/checkout' element={withScrollToTop(CheckPage)()} /> */}
         <Route path='/booking-confirmation' element={withScrollToTop(BookingConfirmationPage)()} />

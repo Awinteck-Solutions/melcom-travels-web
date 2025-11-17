@@ -318,7 +318,7 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
 
                     <div className='grid grid-cols-2 gap-0'>
 
-                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-b-0 lg:border-l border-r border-[#E7E7E7]'>
+                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-0 md:py-4 md:border-b-0 md:border-l md:border-r-0 border-r border-[#E7E7E7]'>
                             <DatePicker
                                 type="oneway"
                                 title="Departure"
@@ -328,7 +328,7 @@ const OneWayFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                                 onChange={(value) => setDateValue(new Date(value))}
                             />
                         </div>
-                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l border-[#E7E7E7]'>
+                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-0 md:py-4 lg:border-l border-[#E7E7E7]'>
                             <Passengers
                                 value={passengers}
                                 onChange={setPassengers}
@@ -533,19 +533,19 @@ const RoundTripFlightSearch = ({ handleSearch, isResultLoading = false }) => {
             <div className="text-center">
                 <div className='md:border-2 border md:mt-0 mt-1 border-[#E7E7E7] w-full rounded-2xl flex flex-col lg:flex-row'>
 
-                    <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 pb-6 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
+                    <div className='w-full  lg:max-w-[270px] lg:w-fit flex justify-center  p-3 md:p-4 pb-6 md:py-4 border-b lg:border-b-0 lg:border-r border-[#E7E7E7] relative'>
                         <CustomSearch value={fromLocation} label="From" selectedAirport={(val) => setFromLocation(val)} />
                         <div className='rounded-full h-fit p-1 md:p-4 bg-gradient-to-r from-[#243167] to-[#364A9C] text-white ring-4 absolute -bottom-3 lg:-bottom-0 lg:-right-7 lg:top-10 left-1/2 lg:left-auto transform -translate-x-1/2 lg:transform-none z-10'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" className="md:w-6 md:h-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path stroke-dasharray="14" stroke-dashoffset="14" d="M15 7h-11.5M9 17h11.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="14;0" /></path><path stroke-dasharray="8" stroke-dashoffset="8" d="M3 7l4 4M3 7l4 -4M21 17l-4 4M21 17l-4 -4"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.2s" values="8;0" /></path></g></svg>
                         </div>
                     </div>
 
-                    <div className='w-full flex justify-center lg:w-fit p-3 md:p-4 md:py-4 pt-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
+                    <div className='w-full  lg:max-w-[270px] lg:w-fit flex justify-center p-3 md:p-4 md:py-4 pt-4 border-b lg:border-b-0 lg:border-l border-[#E7E7E7]'>
                         <CustomSearch value={toLocation} label="To" selectedAirport={(val) => setToLocation(val)} />
                     </div>
 
                     <div className='grid grid-cols-2 gap-0'>
-                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-b-0 lg:border-l border-r border-[#E7E7E7]'>
+                        <div className='col-span-1 w-full lg:w-fitl flex justify-center p-3 md:p-4 lg:border-b-0 lg:border-l border-r border-[#E7E7E7]'>
                             <DatePicker
                                 type="roundtrip"
                                 title="Departure"
@@ -555,7 +555,7 @@ const RoundTripFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                                 onChange={(value) => setDateValue(new Date(value))}
                             />
                         </div>
-                        <div className='col-span-1 w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l border-[#E7E7E7]'>
+                        <div className='col-span-1 w-full lg:w-fitl flex justify-center p-3 md:p-4 md:border-r border-[#E7E7E7]'>
                             <DatePicker
                                 type="roundtrip"
                                 title="Return"
@@ -567,7 +567,7 @@ const RoundTripFlightSearch = ({ handleSearch, isResultLoading = false }) => {
                         </div>
                     </div>
 
-                    <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l border-[#E7E7E7]'>
+                    <div className='w-full lg:w-fit flex justify-center p-3 md:p-4 lg:border-l md:border-t-0 border-t border-[#E7E7E7]'>
                         <Passengers
                             value={passengers}
                             onChange={setPassengers}

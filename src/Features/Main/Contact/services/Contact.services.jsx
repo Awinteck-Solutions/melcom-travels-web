@@ -58,3 +58,42 @@ export const getContactInfo = async () => {
     }
 };
 
+/**
+ * Get inquiry types
+ * @returns {Promise<Object>} API response
+ */
+export const getInquiryTypes = async () => {
+    try {
+        const response = await axios.get(ContactEndpoints.INQUIRY_TYPES);
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+
+/**
+ * Get terms and conditions
+ * @returns {Promise<Object>} API response
+ */
+export const getTermsAndConditions = async () => {
+    try {
+        const response = await axios.get(ContactEndpoints.TERMS_AND_CONDITIONS);
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+
+/**
+ * Get privacy policy
+ * @returns {Promise<Object>} API response
+ */
+export const getPrivacyPolicy = async () => {
+    try {
+        const response = await axios.get(ContactEndpoints.PRIVACY_POLICY);
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+

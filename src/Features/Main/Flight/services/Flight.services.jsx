@@ -121,6 +121,20 @@ export const getFlightDealCategories = async () => {
     }
 };
 
+/**
+ * Get flight deals by category
+ * @param {string} categoryId - Category ID
+ * @returns {Promise<Object>} API response
+ */
+export const getFlightDealsByCategory = async (categoryId) => {
+    try {
+        const response = await axios.get(FlightEndpoints.DEALS_BY_CATEGORY(categoryId));
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+
 // ==================== FLIGHT BOOKINGS SERVICES ====================
 
 /**
@@ -203,6 +217,48 @@ export const getAllAirports = async () => {
 export const searchAirports = async (query) => {
     try {
         const response = await axios.get(FlightEndpoints.AIRPORTS_SEARCH(query));
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+
+// ==================== COUNTRY LIST SERVICES ====================
+
+/**
+ * Get country list categories
+ * @returns {Promise<Object>} API response
+ */
+export const getCountryListCategories = async () => {
+    try {
+        const response = await axios.get(FlightEndpoints.COUNTRY_LIST_CATEGORIES);
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+
+/**
+ * Get all country list items
+ * @returns {Promise<Object>} API response
+ */
+export const getAllCountryList = async () => {
+    try {
+        const response = await axios.get(FlightEndpoints.COUNTRY_LIST);
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+
+/**
+ * Get country list items by category
+ * @param {string} categoryId - Category ID
+ * @returns {Promise<Object>} API response
+ */
+export const getCountryListByCategory = async (categoryId) => {
+    try {
+        const response = await axios.get(FlightEndpoints.COUNTRY_LIST_BY_CATEGORY(categoryId));
         return handleApiResponse(response);
     } catch (error) {
         return handleApiError(error);

@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
+import { getContactInfo } from '../Features/Main/Contact/services/Contact.services';
 
 // Helper function to get stored user data
 const getStoredUserData = () => {
@@ -53,7 +54,10 @@ const initialState = {
   language: 'en',
   
   // Notifications
-  notifications: []
+  notifications: [],
+  
+  // Contact Information
+  contactInfo: null
 };
 
 // Action types
@@ -80,7 +84,10 @@ export const ACTIONS = {
   
   // Notifications
   ADD_NOTIFICATION: 'ADD_NOTIFICATION',
-  REMOVE_NOTIFICATION: 'REMOVE_NOTIFICATION'
+  REMOVE_NOTIFICATION: 'REMOVE_NOTIFICATION',
+  
+  // Contact Info
+  SET_CONTACT_INFO: 'SET_CONTACT_INFO'
 };
 
 // Reducer function
@@ -209,6 +216,13 @@ const globalReducer = (state, action) => {
       return {
         ...state,
         notifications: state.notifications.filter(notification => notification.id !== action.payload)
+      };
+      
+    // Contact Info
+    case ACTIONS.SET_CONTACT_INFO:
+      return {
+        ...state,
+        contactInfo: action.payload
       };
       
     default:
@@ -360,6 +374,30 @@ export const GlobalProvider = ({ children }) => {
     dispatch({ type: ACTIONS.REMOVE_NOTIFICATION, payload: notificationId });
   };
 
+  const setContactInfo = (contactInfo) => {
+    dispatch({ type: ACTIONS.SET_CONTACT_INFO, payload: contactInfo });
+  };
+
+  // Fetch contact info once on mount
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const response = await getContactInfo();
+        if (response.status) {
+          setContactInfo(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching contact info:', error);
+      }
+    };
+
+    // Only fetch if contactInfo is not already set
+    if (!state.contactInfo) {
+      fetchContactInfo();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
   const value = {
     ...state,
     login,
@@ -375,7 +413,8 @@ export const GlobalProvider = ({ children }) => {
     setTheme,
     setLanguage,
     addNotification,
-    removeNotification
+    removeNotification,
+    setContactInfo
   };
 
   return (

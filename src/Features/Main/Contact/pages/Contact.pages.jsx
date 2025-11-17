@@ -5,28 +5,50 @@ import Header from '../../../../components/Header';
 import Footer from '../../../../components/Footer';
 import Container from '../../../../components/Container';
 import { useGlobalContext } from '../../../../context';
-import { submitContactForm, getContactInfo } from '../services/Contact.services';
+import { submitContactForm, getInquiryTypes } from '../services/Contact.services';
 import { notifications } from '@mantine/notifications';
 import { ScrollAnimation, StaggeredScrollAnimation } from '../../../../components/animations';
 
 const ContactPage = () => {
-  const { isAuthenticated, user } = useGlobalContext();
+  const { isAuthenticated, user, contactInfo } = useGlobalContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [contactInfo, setContactInfo] = useState(null);
+  const [inquiryTypes, setInquiryTypes] = useState([]);
+  const [isLoadingInquiryTypes, setIsLoadingInquiryTypes] = useState(false);
 
-
-  // Get contact information
-  const fetchContactInfo = async () => {
-    const response = await getContactInfo();
-    console.log('first', response.data.data)
-    if (response.status) {
-      setContactInfo(response.data.data);
-      
+  // Get inquiry types
+  const fetchInquiryTypes = async () => {
+    setIsLoadingInquiryTypes(true);
+    try {
+      const response = await getInquiryTypes();
+      if (response.status) {
+        // Filter only ACTIVE inquiry types
+        const activeInquiryTypes = (response.data.data || []).filter(
+          type => type.status === 'ACTIVE'
+        );
+        setInquiryTypes(activeInquiryTypes);
+      } else {
+        notifications.show({
+          title: 'Error',
+          message: response.message || 'Failed to load inquiry types',
+          color: 'red',
+          position: 'top-right',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching inquiry types:', error);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to load inquiry types',
+        color: 'red',
+        position: 'top-right',
+      });
+    } finally {
+      setIsLoadingInquiryTypes(false);
     }
   };
 
   useEffect(() => {
-    fetchContactInfo();
+    fetchInquiryTypes();
   }, []);
 
   // Validation schema
@@ -62,14 +84,18 @@ const ContactPage = () => {
       setIsLoading(true);
 
       try {
+        // Find the selected inquiry type to get its name for the subject
+        const selectedInquiryType = inquiryTypes.find(type => type.id === values.inquiryType);
+        const inquiryTypeName = selectedInquiryType?.name || 'General Inquiry';
+        
         // Prepare data according to API structure
         const contactData = {
           name: `${values.firstName} ${values.lastName}`,
           email: values.email,
           phone: values.phone || '',
-          subject: `${values.inquiryType} Inquiry`,
+          subject: `${inquiryTypeName} Inquiry`,
           message: values.message,
-          inquiryType: values.inquiryType
+          inquiryType: values.inquiryType // This is now the ID
         };
 
         const response = await submitContactForm(contactData);
@@ -309,19 +335,21 @@ const ContactPage = () => {
                       value={formik.values.inquiryType}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
+                      disabled={isLoadingInquiryTypes}
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all appearance-none bg-white ${
                         formik.touched.inquiryType && formik.errors.inquiryType
                           ? 'border-red-500'
                           : 'border-gray-300'
-                      }`}
+                      } ${isLoadingInquiryTypes ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <option value="">Select inquiry type</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="booking">Booking Support</option>
-                      <option value="cancellation">Cancellation</option>
-                      <option value="refund">Refund Request</option>
-                      <option value="technical">Technical Support</option>
-                      <option value="feedback">Feedback</option>
+                      <option value="">
+                        {isLoadingInquiryTypes ? 'Loading inquiry types...' : 'Select inquiry type'}
+                      </option>
+                      {inquiryTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
                     </select>
                     {formik.touched.inquiryType && formik.errors.inquiryType && (
                       <p className="mt-1 text-sm text-red-600">{formik.errors.inquiryType}</p>

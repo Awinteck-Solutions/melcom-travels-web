@@ -216,7 +216,7 @@ const DatePicker = ({
 
             {/* Calendar Popup */}
             {isOpen && (
-                <div className="absolute top-full md:-left-10 -left-6  mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50 min-w-[280px]">
+                <div className={`absolute top-full  md:right-5 ${title=='Return' ? '-right-5' : '-left-6'}  mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-50 min-w-[280px]`}>
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
                         <button
