@@ -13,6 +13,72 @@ import { notifications } from '@mantine/notifications';
 import { createCheckout, transformPassengerData, transformFlightData } from '../services/checkout.service';
 import { useScrollToTop } from '../../../hooks/useScrollToTop';
 
+// Contact Info Form Component
+const ContactInfoForm = React.memo(({ formik, user }) => (
+    <div className="bg-white rounded-xl p-6 mb-6 shadow-sm border">
+        <h3 className="text-xl font-bold text-gray-800 mb-6">Contact Information</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Name Field */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name
+                </label>
+                <input
+                    type="text"
+                    name="contactInfo.name"
+                    value={formik.values.contactInfo?.name || ''}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Enter your full name"
+                    className="w-full px-4 py-3 bg-gray-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#364A9C] focus:border-transparent outline-none transition-all text-gray-800 placeholder-gray-500"
+                />
+                {formik.touched.contactInfo?.name && formik.errors.contactInfo?.name && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.contactInfo.name}</p>
+                )}
+            </div>
+
+            {/* Email Field */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                </label>
+                <input
+                    type="email"
+                    name="contactInfo.email"
+                    value={formik.values.contactInfo?.email || ''}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="Enter email address"
+                    className="w-full px-4 py-3 bg-gray-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#364A9C] focus:border-transparent outline-none transition-all text-gray-800 placeholder-gray-500"
+                />
+                {formik.touched.contactInfo?.email && formik.errors.contactInfo?.email && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.contactInfo.email}</p>
+                )}
+            </div>
+
+            {/* Phone Number Field (Optional) */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number <span className="text-gray-500 text-xs">(Optional)</span>
+                </label>
+                <input
+                    type="tel"
+                    name="contactInfo.phone"
+                    value={formik.values.contactInfo?.phone || ''}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="XXX XXX XXXX"
+                    className="w-full px-4 py-3 bg-gray-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#364A9C] focus:border-transparent outline-none transition-all text-gray-800 placeholder-gray-500"
+                />
+                {formik.touched.contactInfo?.phone && formik.errors.contactInfo?.phone && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.contactInfo.phone}</p>
+                )}
+            </div>
+        </div>
+    </div>
+));
+
 // Formik-based PassengerForm component
 const PassengerForm = React.memo(({ passengerKey, title, formik }) => (
     <div className="bg-white rounded-xl p-6 mb-6 shadow-sm border">
@@ -32,11 +98,9 @@ const PassengerForm = React.memo(({ passengerKey, title, formik }) => (
                     className="w-full px-4 py-3 bg-gray-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#364A9C] focus:border-transparent outline-none transition-all text-gray-800"
                 >
                     <option value="">Select your title</option>
-                    <option value="Mr">Mr</option>
-                    <option value="Mrs">Mrs</option>
-                    <option value="Ms">Ms</option>
-                    <option value="Dr">Dr</option>
-                    <option value="Prof">Prof</option>
+                    <option value="MR">Mr</option>
+                    <option value="MRS">Mrs</option>
+                    <option value="MISS">Miss</option>
                 </select>
                 {formik.touched.passengers?.[passengerKey]?.title && formik.errors.passengers?.[passengerKey]?.title && (
                     <p className="mt-1 text-sm text-red-600">{formik.errors.passengers[passengerKey].title}</p>
@@ -265,6 +329,27 @@ const CheckoutPage = () => {
    const [checkoutData, setCheckoutData] = useState(null);
     const [showPaymentIframe, setShowPaymentIframe] = useState(false);
     
+    // Initialize contact info with user data if available
+    const initializeContactInfo = (user) => {
+        if (user) {
+            // Combine firstname and lastname if available, or use name if it exists
+            const fullName = user.firstname && user.lastname 
+                ? `${user.firstname} ${user.lastname}`.trim()
+                : user.name || '';
+            
+            return {
+                name: fullName,
+                email: user.email || '',
+                phone: user.phone || user.phoneNumber || ''
+            };
+        }
+        return {
+            name: '',
+            email: '',
+            phone: ''
+        };
+    };
+    
     // Initialize passenger data structure for Formik
     const initializePassengerData = (passengerCounts) => {
         const data = {};
@@ -344,6 +429,11 @@ const CheckoutPage = () => {
         });
         
         return Yup.object().shape({
+            contactInfo: Yup.object().shape({
+                name: Yup.string().required('Full name is required'),
+                email: Yup.string().email('Invalid email format').required('Email is required'),
+                phone: Yup.string() // Optional field, no validation required
+            }),
             passengers: Yup.object().shape(passengerSchema)
         });
     };
@@ -369,7 +459,8 @@ const CheckoutPage = () => {
             // Prepare checkout payload
             const checkoutPayload = {
                 flight: transformedFlight,
-                Traveler: transformedTravelers
+                Traveler: transformedTravelers,
+                contactInfo: values.contactInfo
             };
             
             console.log('Checkout payload:', checkoutPayload);
@@ -435,6 +526,7 @@ const CheckoutPage = () => {
     // Initialize Formik with proper dependencies
     const formik = useFormik({
         initialValues: {
+            contactInfo: initializeContactInfo(user),
             passengers: initializePassengerData(passengerCounts)
         },
         validationSchema: createValidationSchema(passengerCounts),
@@ -442,14 +534,18 @@ const CheckoutPage = () => {
         enableReinitialize: true // Reinitialize when passengerCounts change
     });
 
-    // Update formik when passengerCounts change
+    // Update formik when passengerCounts or user changes
+    // Note: We manually update values here because user data might load asynchronously from localStorage
+    // and we want to populate contactInfo when user becomes available
     useEffect(() => {
         if (Object.keys(passengerCounts).length > 0) {
             formik.setValues({
+                contactInfo: initializeContactInfo(user),
                 passengers: initializePassengerData(passengerCounts)
             });
         }
-    }, [passengerCounts]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [passengerCounts, user]);
 
     // Generate passenger forms dynamically using useMemo for optimization
     const generatePassengerForms = useMemo(() => {
@@ -506,13 +602,7 @@ const CheckoutPage = () => {
                 position: 'top-right'
             });
             handleCloseIframe();
-            navigate('/booking-confirmation', { 
-                state: { 
-                    checkoutData,
-                    flightData: flight,
-                    passengerData: formik.values.passengers
-                } 
-            });
+            navigate(`/booking-confirmation/${checkoutData._id}`);
         };
 
         // Listen for postMessage events from the payment gateway
@@ -523,7 +613,7 @@ const CheckoutPage = () => {
                 
                 try {
                     const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                    
+                    console.log('PaymentIFrame data', data)
                     // Handle different payment statuses
                     if (data.status === 'success' || data.status === 'completed') {
                         handlePaymentSuccess();
@@ -548,11 +638,11 @@ const CheckoutPage = () => {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] flex flex-col">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b">
+                    <div className="flex items-center justify-between p-4 border-b">
                         <div>
-                            <h2 className="text-xl font-bold text-gray-800">Complete Payment</h2>
-                            <p className="text-sm text-gray-600 mt-1">
-                                Booking Reference: {checkoutData.bookingReference}
+                            {/* <h2 className="text-xl font-bold text-gray-800">Complete Payment</h2> */}
+                            <p className="text-sm text-gray-600">
+                                Booking Reference: <span className="font-bold text-gray-800">{checkoutData.bookingReference}</span>
                             </p>
                         </div>
                         <button
@@ -566,7 +656,8 @@ const CheckoutPage = () => {
                     </div>
 
                     {/* Iframe Container */}
-                    <div className="flex-1 p-6">
+                    <div className="flex-1">
+                        {/* <p>{checkoutData.checkoutUrl}</p> */}
                         <iframe
                             src={checkoutData.checkoutUrl}
                             className="w-full h-full border-0 rounded-lg"
@@ -576,7 +667,7 @@ const CheckoutPage = () => {
                     </div>
 
                     {/* Footer */}
-                    <div className="p-6 border-t bg-gray-50">
+                    {/* <div className="p-6 border-t bg-gray-50">
                         <div className="flex items-center justify-between flex-wrap gap-3">
                             <div className="text-sm text-gray-600">
                                 <p>Status: <span className="font-medium text-blue-600">{checkoutData.status}</span></p>
@@ -597,7 +688,7 @@ const CheckoutPage = () => {
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         );
@@ -716,10 +807,14 @@ const CheckoutPage = () => {
                                         <OneWayFlightResultCard
                                             key={flight.id || 'default'}
                                             flight={flight}
+                                            bookingMode={true}
                                         // onBookNow={handleBookNow}
                                         // onViewDetails={handleViewDetails}
                                         />
                                     </div>
+
+                                    {/* Contact Information Form */}
+                                    <ContactInfoForm formik={formik} user={user} />
 
                                     {/* Dynamic Passenger Forms */}
                                     {generatePassengerForms}

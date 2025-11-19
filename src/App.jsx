@@ -25,7 +25,6 @@ import TermsAndConditionsPage from './Features/Main/Contact/pages/TermsAndCondit
 import PrivacyPolicyPage from './Features/Main/Contact/pages/PrivacyPolicy.pages'
 import { ScrollAnimationDemo } from './components/animations'
 import withScrollToTop from './components/withScrollToTop'
-import { CheckPage } from './Features/Auth/pages/Check.pages'
 
 // Component to handle page transitions
 function AnimatedRoutes() {
@@ -60,7 +59,7 @@ function AnimatedRoutes() {
         <Route path='/terms' element={withScrollToTop(TermsAndConditionsPage)()} />
         <Route path='/privacy' element={withScrollToTop(PrivacyPolicyPage)()} />
         <Route path='/checkout' element={withScrollToTop(CheckoutPage)()} />
-        {/* <Route path='/checkout' element={withScrollToTop(CheckPage)()} /> */}
+        <Route path='/booking-confirmation/:id' element={withScrollToTop(BookingConfirmationPage)()} />
         <Route path='/booking-confirmation' element={withScrollToTop(BookingConfirmationPage)()} />
         <Route path='/scroll-demo' element={withScrollToTop(ScrollAnimationDemo)()} />
       </Routes>

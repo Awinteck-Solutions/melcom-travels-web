@@ -54,6 +54,30 @@ export const createCheckout = async (checkoutData, authToken = null) => {
 };
 
 /**
+ * Get checkout status by ID
+ * @param {string} checkoutId - Checkout ID
+ * @param {string} authToken - Authentication token (optional)
+ * @returns {Promise<Object>} API response
+ */
+export const getCheckoutStatus = async (checkoutId, authToken = null) => {
+    try {
+        const headers = {};
+        
+        // Add authorization header if token is provided
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        const response = await axios.get(checkoutEndpoints.GET_CHECKOUT_STATUS(checkoutId), {
+            headers
+        });
+        return handleApiResponse(response);
+    } catch (error) {
+        return handleApiError(error);
+    }
+};
+
+/**
  * Transform passenger data to API format
  * @param {Object} passengerData - Raw passenger data from form
  * @param {Object} passengerCounts - Passenger counts

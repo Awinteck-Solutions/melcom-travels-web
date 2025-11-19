@@ -27,7 +27,7 @@ import {
 } from '../../../../components/animations';
 import { div } from 'framer-motion/client';
 
-export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => {
+export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails, bookingMode = false }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [luggageModalOpened, setLuggageModalOpened] = useState(false);
     const [tarifModalOpened, setTarifModalOpened] = useState(false);
@@ -135,7 +135,15 @@ export const OneWayFlightResultCard = ({ flight, onBookNow, onViewDetails }) => 
 
                     {/* Price and Class Selector */}
                     <Stack gap="xs" align="flex-end">
-                        {flight?.allPrices && flight.allPrices.length > 1 ? (
+                        { bookingMode ? (
+                            <Badge
+                                variant="light"
+                                color="#364A9C"
+                                size="lg"
+                            >
+                                {displayBrandName}
+                            </Badge>
+                        ) : flight?.allPrices && flight.allPrices.length > 1 ? (
                             <Select
                                 value={selectedPriceIndex.toString()}
                                 onChange={(value) => {

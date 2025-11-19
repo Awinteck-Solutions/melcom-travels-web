@@ -1,48 +1,141 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useGlobalContext } from '../../../context';
 import Container from '../../../components/Container';
 import Header from '../../../components/Header';
 import { notifications } from '@mantine/notifications';
 import { useScrollToTop } from '../../../hooks/useScrollToTop';
+import { getCheckoutStatus } from '../services/checkout.service';
 
 const BookingConfirmationPage = () => {
     const navigate = useNavigate();
+    const params = useParams();
     const location = useLocation();
     const { user } = useGlobalContext();
     const [checkoutData, setCheckoutData] = useState(null);
     const [flightData, setFlightData] = useState(null);
     const [passengerData, setPassengerData] = useState(null);
+    const [contactInfo, setContactInfo] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
+    // Get id from URL params
+    const id = params.id;
     
     // Auto scroll to top when page loads
     useScrollToTop();
 
     useEffect(() => {
-        // Get checkout data from navigation state
-        if (location.state && location.state.checkoutData) {
-            setCheckoutData(location.state.checkoutData);
-            
-            // Extract flight and passenger data if available
-            if (location.state.flightData) {
-                setFlightData(location.state.flightData);
+        const fetchBookingDetails = async () => {
+            // If ID is available in URL params, fetch from API
+            if (id) {
+                try {
+                    setIsLoading(true);
+                    setError(null);
+                    
+                    // Get auth token if user is logged in
+                    const authToken = user?.token || null;
+                    
+                    // Fetch booking details from API
+                    const response = await getCheckoutStatus(id, authToken);
+                    
+                    if (response.status && response.data?.data) {
+                        const bookingData = response.data.data;
+                        
+                        // Set checkout data
+                        setCheckoutData({
+                            checkoutId: bookingData.checkoutId,
+                            bookingReference: bookingData.bookingReference,
+                            status: bookingData.status,
+                            paymentStatus: bookingData.paymentStatus,
+                            totalAmount: bookingData.totalAmount,
+                            currency: bookingData.currency
+                        });
+                        
+                        // Set flight data
+                        if (bookingData.flight) {
+                            setFlightData(bookingData.flight);
+                        }
+                        
+                        // Set passenger data (transform travelers to passenger format)
+                        if (bookingData.travelers && bookingData.travelers.length > 0) {
+                            const transformedPassengers = {};
+                            bookingData.travelers.forEach((traveler, index) => {
+                                const passengerType = traveler.PassengerType === 'ADT' ? 'adult' 
+                                    : traveler.PassengerType === 'CHD' ? 'child' 
+                                    : 'infant';
+                                
+                                transformedPassengers[`${passengerType}${index + 1}`] = {
+                                    title: traveler.NamePrefix || '',
+                                    firstName: traveler.GivenName || '',
+                                    lastName: traveler.Surname || '',
+                                    email: traveler.email || '',
+                                    gender: traveler.Gender || '',
+                                    dateOfBirth: traveler.BirthDate || '',
+                                    nationality: '',
+                                    phoneNumber: traveler.phone || '',
+                                    passport: traveler.Passport || '',
+                                    type: passengerType
+                                };
+                            });
+                            setPassengerData(transformedPassengers);
+                        }
+                        
+                        // Set contact info
+                        if (bookingData.contactInfo) {
+                            setContactInfo(bookingData.contactInfo);
+                        }
+                        
+                        setIsLoading(false);
+                    } else {
+                        setError(response.message || 'Failed to fetch booking details');
+                        setIsLoading(false);
+                        notifications.show({
+                            title: "Error",
+                            message: response.message || 'Failed to fetch booking details',
+                            color: "red",
+                            position: 'top-right'
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error fetching booking details:', err);
+                    setError('An error occurred while fetching booking details');
+                    setIsLoading(false);
+                    notifications.show({
+                        title: "Error",
+                        message: 'An error occurred while fetching booking details',
+                        color: "red",
+                        position: 'top-right'
+                    });
+                }
+            } 
+            // Fallback: Get checkout data from navigation state (for backward compatibility)
+            else if (location.state && location.state.checkoutData) {
+                setCheckoutData(location.state.checkoutData);
+                
+                // Extract flight and passenger data if available
+                if (location.state.flightData) {
+                    setFlightData(location.state.flightData);
+                }
+                if (location.state.passengerData) {
+                    setPassengerData(location.state.passengerData);
+                }
+                
+                setIsLoading(false);
+            } else {
+                // If no ID and no state data, redirect to home
+                notifications.show({
+                    title: "No Booking Data",
+                    message: "No booking information found. Redirecting to home page.",
+                    color: "orange",
+                    position: 'top-right'
+                });
+                navigate('/');
             }
-            if (location.state.passengerData) {
-                setPassengerData(location.state.passengerData);
-            }
-            
-            setIsLoading(false);
-        } else {
-            // If no data, redirect to home
-            notifications.show({
-                title: "No Booking Data",
-                message: "No booking information found. Redirecting to home page.",
-                color: "orange",
-                position: 'top-right'
-            });
-            navigate('/');
-        }
-    }, [location.state, navigate]);
+        };
+        
+        fetchBookingDetails();
+    }, [id, location.state, navigate, user]);
 
     const handleDownloadTicket = () => {
         // TODO: Implement ticket download functionality
@@ -79,6 +172,30 @@ const BookingConfirmationPage = () => {
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#364A9C] mx-auto mb-4"></div>
                         <p className="text-gray-600">Loading booking confirmation...</p>
+                    </div>
+                </div>
+            </Container>
+        );
+    }
+
+    if (error && !checkoutData) {
+        return (
+            <Container>
+                <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center max-w-md">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Booking</h2>
+                        <p className="text-gray-600 mb-6">{error}</p>
+                        <button
+                            onClick={() => navigate('/')}
+                            className="bg-[#364A9C] text-white py-2 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        >
+                            Go to Home
+                        </button>
                     </div>
                 </div>
             </Container>
@@ -136,7 +253,7 @@ const BookingConfirmationPage = () => {
 
                                     {/* Status */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
+                                        <label className="block text-sm font-medium text-gray-600 mb-1">Booking Status</label>
                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                                             checkoutData.status === 'PENDING' 
                                                 ? 'bg-yellow-100 text-yellow-800' 
@@ -148,6 +265,32 @@ const BookingConfirmationPage = () => {
                                         </span>
                                     </div>
 
+                                    {/* Payment Status */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-600 mb-1">Payment Status</label>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                                            checkoutData.paymentStatus === 'PENDING' 
+                                                ? 'bg-yellow-100 text-yellow-800' 
+                                                : checkoutData.paymentStatus === 'COMPLETED' || checkoutData.paymentStatus === 'PAID'
+                                                ? 'bg-green-100 text-green-800'
+                                                : checkoutData.paymentStatus === 'FAILED'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {checkoutData.paymentStatus || 'PENDING'}
+                                        </span>
+                                    </div>
+
+                                    {/* Total Amount */}
+                                    {checkoutData.totalAmount && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">Total Amount</label>
+                                            <p className="text-lg font-bold text-gray-800">
+                                                {checkoutData.currency || 'GHS'} {checkoutData.totalAmount.toLocaleString()}
+                                            </p>
+                                        </div>
+                                    )}
+
                                     {/* Payment Method */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-600 mb-1">Payment Method</label>
@@ -156,6 +299,34 @@ const BookingConfirmationPage = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Contact Information */}
+                        {contactInfo && (
+                            <div className="bg-white rounded-xl shadow-lg border mb-8">
+                                <div className="p-6 border-b">
+                                    <h2 className="text-xl font-bold text-gray-800">Contact Information</h2>
+                                </div>
+                                
+                                <div className="p-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">Name</label>
+                                            <p className="text-sm text-gray-800">{contactInfo.name || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
+                                            <p className="text-sm text-gray-800">{contactInfo.email || 'N/A'}</p>
+                                        </div>
+                                        {contactInfo.phone && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-600 mb-1">Phone</label>
+                                                <p className="text-sm text-gray-800">{contactInfo.phone}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Flight Information */}
                         <div className="bg-white rounded-xl shadow-lg border mb-8">
@@ -173,12 +344,14 @@ const BookingConfirmationPage = () => {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-gray-800">Flight Details</h3>
-                                            <p className="text-sm text-gray-600">Economy Class</p>
+                                            <p className="text-sm text-gray-600">{flightData?.class || 'Economy'} Class</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm text-gray-600">Departure</p>
-                                        <p className="font-semibold text-gray-800">Today</p>
+                                        <p className="font-semibold text-gray-800">
+                                            {flightData?.departure ? new Date(flightData.departure).toLocaleDateString() : 'Today'}
+                                        </p>
                                     </div>
                                 </div>
 
